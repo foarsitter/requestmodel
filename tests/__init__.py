@@ -1,1 +1,1 @@
-"""Test suite for the fastclient package."""
+"""Test suite for the requestmodel package."""

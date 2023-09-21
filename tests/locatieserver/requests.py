@@ -6,7 +6,7 @@ from typing import Type
 from fastapi import Query
 from typing_extensions import Annotated
 
-from fastclient import RequestModel
+from requestmodel import RequestModel
 
 from .models import LookupResponse
 
