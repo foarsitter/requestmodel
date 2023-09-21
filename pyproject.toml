@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "requestmodel"
-version = "0.1.0"
+version = "0.2.0"
 description = "requestmodel"
 authors = ["Jelmer Draaijer <info@jelmert.nl>"]
 license = "MIT"
@@ -16,7 +16,7 @@ classifiers = [
 Changelog = "https://github.com/foarsitter/fastclient/releases"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = ">=3.8"
 fastapi = "^0.103.1"
 httpx = "^0.25.0"
 
