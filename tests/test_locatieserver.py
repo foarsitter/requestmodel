@@ -1,5 +1,7 @@
+"""Testing the LookupRequest."""
 import pytest
-from httpx import Client, AsyncClient
+from httpx import AsyncClient
+from httpx import Client
 
 from tests.locatieserver.models import LookupResponse
 from tests.locatieserver.requests import LookupRequest
@@ -13,6 +15,7 @@ def test_lookup_request_sync() -> None:
     response: LookupResponse = request.send(client)
 
     assert response.response.num_found == 1
+
 
 @pytest.mark.asyncio
 async def test_lookup_request_async() -> None:

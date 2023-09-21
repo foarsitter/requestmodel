@@ -1,6 +1,3 @@
-"""Fastclient."""
-
-
 from collections import defaultdict
 from typing import Any
 from typing import ClassVar
@@ -25,6 +22,8 @@ ResponseType = TypeVar("ResponseType", bound=BaseModel)
 
 
 class RequestModel(BaseModel, Generic[ResponseType]):
+    """Declarative way to define a model"""
+
     model_config = ConfigDict(populate_by_name=True)
     url: ClassVar[str]
     method: ClassVar[str]
@@ -34,6 +33,7 @@ class RequestModel(BaseModel, Generic[ResponseType]):
     body: Optional[ResponseType] = None
 
     def as_request(self, client: BaseClient) -> Request:
+        """Transform the properties of the object into a request"""
         request_args: Dict[Type[FieldInfo], Dict[str, Any]] = defaultdict(dict)
 
         skip_properties = ["url", "method", "response_model", "body"]
@@ -69,12 +69,14 @@ class RequestModel(BaseModel, Generic[ResponseType]):
         return r
 
     def send(self, client: httpx.Client) -> ResponseType:
+        """Send the request synchronously"""
         r = self.as_request(client)
         response = client.send(r)
         response.raise_for_status()
         return self.response_model.model_validate(response.json())
 
     async def asend(self, client: httpx.AsyncClient) -> ResponseType:
+        """Send the request asynchronously"""
         r = self.as_request(client)
         response = await client.send(r)
         return self.response_model.model_validate(response.json())

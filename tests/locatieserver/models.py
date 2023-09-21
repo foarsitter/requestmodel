@@ -8,13 +8,6 @@ from pydantic import Field
 
 class LocatieserverBaseModel(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    """BaseModel replacement for sharing the configuration across the different schemas."""
-
-
-class ErrorResponse(LocatieserverBaseModel):
-    metadata: Optional[List[str]]
-    msg: str
-    code: int
 
 
 class LookupDoc(LocatieserverBaseModel):

@@ -1,8 +1,10 @@
-from typing import ClassVar, Annotated, Optional
+from typing import ClassVar
 from typing import Literal
+from typing import Optional
 from typing import Type
 
 from fastapi import Query
+from typing_extensions import Annotated
 
 from fastclient import RequestModel
 
