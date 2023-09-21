@@ -36,7 +36,13 @@ class RequestModel(BaseModel, Generic[ResponseType]):
     def as_request(self, client: BaseClient) -> Request:
         request_args: Dict[Type[FieldInfo], Dict[str, Any]] = defaultdict(dict)
 
+        skip_properties = ["url", "method", "response_model", "body"]
+
         for k, v in self.__annotations__.items():
+
+            if k in skip_properties:
+                continue
+
             if hasattr(v, "__metadata__"):
                 annotated_property = v.__metadata__[0]
             else:
