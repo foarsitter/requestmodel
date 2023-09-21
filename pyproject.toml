@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fastclient"
-version = "0.0.0"
+version = "0.1.0"
 description = "Fastclient"
 authors = ["Jelmer Draaijer <info@jelmert.nl>"]
 license = "MIT"
