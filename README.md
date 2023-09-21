@@ -1,9 +1,9 @@
 # Fastclient
 
-[![PyPI](https://img.shields.io/pypi/v/fastclient.svg)][pypi status]
-[![Status](https://img.shields.io/pypi/status/fastclient.svg)][pypi status]
-[![Python Version](https://img.shields.io/pypi/pyversions/fastclient)][pypi status]
-[![License](https://img.shields.io/pypi/l/fastclient)][license]
+[![PyPI](https://img.shields.io/pypi/v/requestmodel.svg)][pypi status]
+[![Status](https://img.shields.io/pypi/status/requestmodel.svg)][pypi status]
+[![Python Version](https://img.shields.io/pypi/pyversions/requestmodel)][pypi status]
+[![License](https://img.shields.io/pypi/l/requestmodel)][license]
 
 [![Read the documentation at https://fastclient.readthedocs.io/](https://img.shields.io/readthedocs/fastclient/latest.svg?label=Read%20the%20Docs)][read the docs]
 [![Tests](https://github.com/foarsitter/fastclient/workflows/Tests/badge.svg)][tests]
@@ -12,7 +12,7 @@
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)][pre-commit]
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)][black]
 
-[pypi status]: https://pypi.org/project/fastclient/
+[pypi status]: https://pypi.org/project/requestmodel/
 [read the docs]: https://fastclient.readthedocs.io/
 [tests]: https://github.com/foarsitter/fastclient/actions?workflow=Tests
 [codecov]: https://app.codecov.io/gh/foarsitter/fastclient
@@ -32,7 +32,7 @@
 You can install _Fastclient_ via [pip] from [PyPI]:
 
 ```console
-$ pip install fastclient
+$ pip install requestmodel
 ```
 
 ## Usage
