@@ -50,19 +50,33 @@ class RequestModel(BaseModel, Generic[ResponseType]):
 
             request_args[type(annotated_property)][k] = getattr(self, k)
 
+        _params = jsonable_encoder(request_args[params.Query]) if params.Query else None
+        headers = (
+            jsonable_encoder(request_args[params.Header])
+            if request_args[params.Header]
+            else {}
+        )
+        cookies = (
+            jsonable_encoder(request_args[params.Cookie])
+            if request_args[params.Cookie]
+            else None
+        )
+        files = (
+            jsonable_encoder(request_args[params.File])
+            if request_args[params.File]
+            else None
+        )
         body = jsonable_encoder(self.body) if self.body else None
 
-        headers = request_args[params.Header]
         headers["accept"] = "application/json"
 
         r = Request(
             method=self.method,
             url=client._merge_url(self.url.format(**request_args[params.Path])),
-            params=request_args[params.Query],
+            params=_params,
             headers=headers,
-            cookies=request_args[params.Cookie],
-            data=request_args[params.Body],
-            files=request_args[params.File],
+            cookies=cookies,
+            files=files,
             json=body,
         )
 
