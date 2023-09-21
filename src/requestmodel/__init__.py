@@ -96,10 +96,13 @@ class RequestModel(BaseModel, Generic[ResponseType]):
             else:
                 annotated_property = fastapi.Query()
 
-            if k in values:
-                attr = values[k]
+            value = values.get(k, None)
 
-                request_args[type(annotated_property)][k] = attr
+            if not value and getattr(self, k, None) is not None:
+                value = getattr(self, k)
+
+            if value:
+                request_args[type(annotated_property)][k] = value
 
     def send(self, client: httpx.Client) -> ResponseType:
         """Send the request synchronously"""

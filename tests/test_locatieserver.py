@@ -12,6 +12,9 @@ def test_lookup_request_sync() -> None:
 
     request = LookupRequest(id="adr-bf54db721969487ed33ba84d9973c702")
 
+    r = request.as_request(client)
+    assert "json" in str(r.url)
+
     response: LookupResponse = request.send(client)
 
     assert response.response.num_found == 1
