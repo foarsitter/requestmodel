@@ -20,6 +20,8 @@ from pydantic.fields import FieldInfo
 
 ResponseType = TypeVar("ResponseType", bound=BaseModel)
 
+RequestArgs = Dict[Type[FieldInfo], Dict[str, Any]]
+
 
 class RequestModel(BaseModel, Generic[ResponseType]):
     """Declarative way to define a model"""
@@ -34,24 +36,16 @@ class RequestModel(BaseModel, Generic[ResponseType]):
 
     def as_request(self, client: BaseClient) -> Request:
         """Transform the properties of the object into a request"""
-        request_args: Dict[Type[FieldInfo], Dict[str, Any]] = defaultdict(dict)
 
-        skip_properties = ["url", "method", "response_model", "body"]
+        request_args: RequestArgs = defaultdict(dict)
 
-        for k, v in self.__annotations__.items():
+        # we exclude unset properties from the request
+        values = self.model_dump(exclude_unset=True)
 
-            if k in skip_properties:
-                continue
-
-            if hasattr(v, "__metadata__"):
-                annotated_property = v.__metadata__[0]
-            else:
-                annotated_property = fastapi.Query()
-
-            request_args[type(annotated_property)][k] = getattr(self, k)
+        self.request_args_for_values(request_args, values)
 
         _params = (
-            jsonable_encoder(request_args[params.Query])
+            jsonable_encoder(request_args[params.Query], exclude_unset=True)
             if request_args[params.Query]
             else None
         )
@@ -85,6 +79,27 @@ class RequestModel(BaseModel, Generic[ResponseType]):
         )
 
         return r
+
+    def request_args_for_values(
+        self, request_args: RequestArgs, values: Dict[str, Any]
+    ) -> None:
+
+        skip_properties = ["url", "method", "response_model", "body"]
+
+        for k, v in self.__annotations__.items():
+
+            if k in skip_properties:
+                continue
+
+            if hasattr(v, "__metadata__"):
+                annotated_property = v.__metadata__[0]
+            else:
+                annotated_property = fastapi.Query()
+
+            if k in values:
+                attr = values[k]
+
+                request_args[type(annotated_property)][k] = attr
 
     def send(self, client: httpx.Client) -> ResponseType:
         """Send the request synchronously"""

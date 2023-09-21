@@ -19,3 +19,5 @@ class LookupRequest(RequestModel[LookupResponse]):
     id: str
     wt: Literal["json"] = "json"
     fl: Annotated[Optional[str], Query()] = None
+
+    xyz: Optional[str] = None
