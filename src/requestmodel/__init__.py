@@ -50,7 +50,11 @@ class RequestModel(BaseModel, Generic[ResponseType]):
 
             request_args[type(annotated_property)][k] = getattr(self, k)
 
-        _params = jsonable_encoder(request_args[params.Query]) if params.Query else None
+        _params = (
+            jsonable_encoder(request_args[params.Query])
+            if request_args[params.Query]
+            else None
+        )
         headers = (
             jsonable_encoder(request_args[params.Header])
             if request_args[params.Header]
