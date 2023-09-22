@@ -1,5 +1,5 @@
 """Sphinx configuration."""
-project = "Fastclient"
+project = "requestmodel"
 author = "Jelmer Draaijer"
 copyright = "2023, Jelmer Draaijer"
 extensions = [

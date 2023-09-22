@@ -1,8 +1,8 @@
 # Reference
 
-## fastclient
+## requestmodel
 
 ```{eval-rst}
-.. automodule:: fastclient
+.. automodule:: requestmodel
    :members:
 ```

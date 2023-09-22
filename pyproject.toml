@@ -5,15 +5,15 @@ description = "requestmodel"
 authors = ["Jelmer Draaijer <info@jelmert.nl>"]
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/foarsitter/fastclient"
-repository = "https://github.com/foarsitter/fastclient"
-documentation = "https://fastclient.readthedocs.io"
+homepage = "https://github.com/foarsitter/requestmodel"
+repository = "https://github.com/foarsitter/requestmodel"
+documentation = "https://requestmodel.readthedocs.io"
 classifiers = [
     "Development Status :: 4 - Beta",
 ]
 
 [tool.poetry.urls]
-Changelog = "https://github.com/foarsitter/fastclient/releases"
+Changelog = "https://github.com/foarsitter/requestmodel/releases"
 
 [tool.poetry.dependencies]
 python = ">=3.8"

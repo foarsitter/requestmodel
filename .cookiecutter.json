@@ -5,10 +5,10 @@
   "copyright_year": "2023",
   "development_status": "Development Status :: 4 - Beta",
   "email": "info@jelmert.nl",
-  "friendly_name": "Fastclient",
+  "friendly_name": "requestmodel",
   "github_user": "foarsitter",
   "license": "MIT",
-  "package_name": "fastclient",
-  "project_name": "fastclient",
+  "package_name": "requestmodel",
+  "project_name": "requestmodel",
   "version": "0.1.0"
 }
