@@ -6,6 +6,7 @@ from typing import Generic
 from typing import Optional
 from typing import Type
 from typing import TypeVar
+from typing import get_type_hints
 
 import fastapi
 import httpx
@@ -21,6 +22,14 @@ from pydantic.fields import FieldInfo
 ResponseType = TypeVar("ResponseType", bound=BaseModel)
 
 RequestArgs = Dict[Type[FieldInfo], Dict[str, Any]]
+
+
+def get_annotated_type(v):
+    if hasattr(v, "__metadata__"):
+        annotated_property = v.__metadata__[0]
+    else:
+        annotated_property = fastapi.Query()
+    return annotated_property
 
 
 class RequestModel(BaseModel, Generic[ResponseType]):
@@ -86,15 +95,12 @@ class RequestModel(BaseModel, Generic[ResponseType]):
 
         skip_properties = ["url", "method", "response_model", "body"]
 
-        for k, v in self.model_dump().items():
+        for k, v in get_type_hints(self.__class__, include_extras=True).items():
 
             if k in skip_properties:
                 continue
 
-            if hasattr(v, "__metadata__"):
-                annotated_property = v.__metadata__[0]
-            else:
-                annotated_property = fastapi.Query()
+            annotated_property = get_annotated_type(v)
 
             value = values.get(k, None)
 
