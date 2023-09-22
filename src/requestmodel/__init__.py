@@ -6,7 +6,6 @@ from typing import Generic
 from typing import Optional
 from typing import Type
 from typing import TypeVar
-from typing import get_type_hints
 
 import fastapi
 import httpx
@@ -17,6 +16,7 @@ from httpx._client import BaseClient
 from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic.fields import FieldInfo
+from typing_extensions import get_type_hints
 
 
 ResponseType = TypeVar("ResponseType", bound=BaseModel)
