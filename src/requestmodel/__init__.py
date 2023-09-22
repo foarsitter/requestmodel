@@ -86,7 +86,7 @@ class RequestModel(BaseModel, Generic[ResponseType]):
 
         skip_properties = ["url", "method", "response_model", "body"]
 
-        for k, v in self.__annotations__.items():
+        for k, v in self.model_dump().items():
 
             if k in skip_properties:
                 continue
