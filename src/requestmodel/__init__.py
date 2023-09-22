@@ -24,7 +24,7 @@ ResponseType = TypeVar("ResponseType", bound=BaseModel)
 RequestArgs = Dict[Type[FieldInfo], Dict[str, Any]]
 
 
-def get_annotated_type(v: type) -> FieldInfo:
+def get_annotated_type(v: Any) -> FieldInfo:
     if hasattr(v, "__metadata__"):
         annotated_property = v.__metadata__[0]
     else:
