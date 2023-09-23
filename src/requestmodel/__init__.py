@@ -1,4 +1,3 @@
-from collections import defaultdict
 from typing import Any
 from typing import ClassVar
 from typing import Dict
@@ -7,10 +6,8 @@ from typing import Optional
 from typing import Type
 from typing import TypeVar
 
-import fastapi
-import httpx
-from fastapi import params
-from fastapi.encoders import jsonable_encoder
+from httpx import AsyncClient
+from httpx import Client
 from httpx import Request
 from httpx._client import BaseClient
 from pydantic import BaseModel
@@ -18,12 +15,14 @@ from pydantic import ConfigDict
 from pydantic.fields import FieldInfo
 from typing_extensions import get_type_hints
 
+from requestmodel import params
+
+from .encoders import jsonable_encoder
+
 
 ResponseType = TypeVar("ResponseType", bound=BaseModel)
 
 RequestArgs = Dict[Type[FieldInfo], Dict[str, Any]]
-
-
 
 
 class RequestModel(BaseModel, Generic[ResponseType]):
@@ -47,10 +46,16 @@ class RequestModel(BaseModel, Generic[ResponseType]):
             annotated_property = params.Query()
         return annotated_property
 
-    def as_request(self, client: HttpClient) -> Request:
+    def as_request(self, client: BaseClient) -> Request:
         """Transform the properties of the object into a request"""
 
-        request_args: RequestArgs = defaultdict(dict)
+        request_args: RequestArgs = {
+            params.Query: {},
+            params.Path: {},
+            params.Cookie: {},
+            params.Header: {},
+            params.File: {},
+        }
 
         # we exclude unset properties from the request
         values = self.model_dump(exclude_unset=True)
@@ -117,14 +122,14 @@ class RequestModel(BaseModel, Generic[ResponseType]):
             if value:
                 request_args[type(annotated_property)][k] = value
 
-    def send(self, client: httpx.Client) -> ResponseType:
+    def send(self, client: Client) -> ResponseType:
         """Send the request synchronously"""
         r = self.as_request(client)
         response = client.send(r)
         response.raise_for_status()
         return self.response_model.model_validate(response.json())
 
-    async def asend(self, client: httpx.AsyncClient) -> ResponseType:
+    async def asend(self, client: AsyncClient) -> ResponseType:
         """Send the request asynchronously"""
         r = self.as_request(client)
         response = await client.send(r)
