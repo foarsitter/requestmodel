@@ -111,6 +111,9 @@ class RequestModel(BaseModel, Generic[ResponseType]):
             if not value and getattr(self, k, None) is not None:
                 value = getattr(self, k)
 
+            if isinstance(annotated_property, params.Header) and annotated_property.convert_underscores:
+                k = k.replace("_", "-")
+
             if value:
                 request_args[type(annotated_property)][k] = value
 
