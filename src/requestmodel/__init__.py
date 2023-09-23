@@ -2,6 +2,7 @@ from typing import Any
 from typing import ClassVar
 from typing import Dict
 from typing import Generic
+from typing import Iterator
 from typing import Optional
 from typing import Type
 from typing import TypeVar
@@ -14,6 +15,7 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic.fields import FieldInfo
 from typing_extensions import get_type_hints
+from typing_extensions import override
 
 from requestmodel import params
 
@@ -118,3 +120,17 @@ class RequestModel(BaseModel, Generic[ResponseType]):
         r = self.as_request(client)
         response = await client.send(r)
         return self.response_model.model_validate(response.json())
+
+
+class IteratorRequestModel(RequestModel[ResponseType]):
+    def next(self, response: ResponseType) -> bool:  # pragma: no cover
+        raise NotImplemented
+
+    @override
+    def send(self, client: Client) -> Iterator[ResponseType]:  # type: ignore[override]
+        response = super().send(client)
+        yield response
+
+        while self.next(response):
+            response = super().send(client)
+            yield response
