@@ -124,7 +124,7 @@ class RequestModel(BaseModel, Generic[ResponseType]):
 
 class IteratorRequestModel(RequestModel[ResponseType]):
     def next(self, response: ResponseType) -> bool:  # pragma: no cover
-        raise NotImplemented
+        raise NotImplementedError
 
     @override
     def send(self, client: Client) -> Iterator[ResponseType]:  # type: ignore[override]

@@ -20,7 +20,7 @@ class FileUploadResponse(BaseModel):
     file_size: int
     name: str
     path: str
-    x_token: str
+    extra_header: str
 
 
 class PaginatedResponse(BaseModel):
@@ -35,10 +35,10 @@ async def create_file(
     path: str,
     name: str,
     file: Annotated[bytes, File()],
-    x_token: Annotated[str, Header()],
+    extra_header: Annotated[str, Header()],
 ) -> FileUploadResponse:
     response = FileUploadResponse(
-        file_size=len(file), path=path, name=name, x_token=x_token
+        file_size=len(file), path=path, name=name, extra_header=extra_header
     )
     return response
 
@@ -66,7 +66,7 @@ class FileUploadRequest(RequestModel[FileUploadResponse]):
     path: str
     name: str
     file: Annotated[bytes, File()]
-    x_token: Annotated[str, Header()]
+    extra_header: Annotated[str, Header()]
 
 
 class PaginatedRequest(IteratorRequestModel[PaginatedResponse]):
@@ -86,14 +86,16 @@ class PaginatedRequest(IteratorRequestModel[PaginatedResponse]):
 
 
 def test_file_upload() -> None:
-    request = FileUploadRequest(name="test", path="test", file=b"test", x_token="test1")
+    request = FileUploadRequest(
+        name="test", path="test", file=b"test", extra_header="test1"
+    )
 
     response = request.send(client)
 
     assert isinstance(response, FileUploadResponse)
     assert response.name == "test"
     assert response.path == "test"
-    assert response.x_token == "test1"
+    assert response.extra_header == "test1"
     assert response.file_size == 4
 
 
