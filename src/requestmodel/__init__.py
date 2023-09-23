@@ -24,12 +24,6 @@ ResponseType = TypeVar("ResponseType", bound=BaseModel)
 RequestArgs = Dict[Type[FieldInfo], Dict[str, Any]]
 
 
-def get_annotated_type(v: Any) -> FieldInfo:
-    if hasattr(v, "__metadata__"):
-        annotated_property = v.__metadata__[0]
-    else:
-        annotated_property = fastapi.Query()
-    return annotated_property
 
 
 class RequestModel(BaseModel, Generic[ResponseType]):
@@ -43,7 +37,17 @@ class RequestModel(BaseModel, Generic[ResponseType]):
 
     body: Optional[ResponseType] = None
 
-    def as_request(self, client: BaseClient) -> Request:
+    def get_annotated_type(self, variable_key: str, variable_type: Any) -> FieldInfo:
+        if hasattr(variable_type, "__metadata__"):
+            annotated_property = variable_type.__metadata__[0]
+        # when a key is present in the url we annotate it as a path parameter
+        elif f"{{{variable_key}}}" in self.url:
+            annotated_property = params.Path()
+        else:
+            annotated_property = params.Query()
+        return annotated_property
+
+    def as_request(self, client: HttpClient) -> Request:
         """Transform the properties of the object into a request"""
 
         request_args: RequestArgs = defaultdict(dict)
@@ -100,7 +104,7 @@ class RequestModel(BaseModel, Generic[ResponseType]):
             if k in skip_properties:
                 continue
 
-            annotated_property = get_annotated_type(v)
+            annotated_property = self.get_annotated_type(k, v)
 
             value = values.get(k, None)
 
