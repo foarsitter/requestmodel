@@ -57,31 +57,13 @@ class RequestModel(BaseModel, Generic[ResponseType]):
             params.File: {},
         }
 
-        # we exclude unset properties from the request
-        values = self.model_dump(exclude_unset=True)
+        self.request_args_for_values(request_args)
 
-        self.request_args_for_values(request_args, values)
+        _params = request_args[params.Query]
+        headers = request_args[params.Header]
+        cookies = request_args[params.Cookie]
+        files = request_args[params.File]
 
-        _params = (
-            jsonable_encoder(request_args[params.Query], exclude_unset=True)
-            if request_args[params.Query]
-            else None
-        )
-        headers = (
-            jsonable_encoder(request_args[params.Header])
-            if request_args[params.Header]
-            else {}
-        )
-        cookies = (
-            jsonable_encoder(request_args[params.Cookie])
-            if request_args[params.Cookie]
-            else None
-        )
-        files = (
-            jsonable_encoder(request_args[params.File])
-            if request_args[params.File]
-            else None
-        )
         body = jsonable_encoder(self.body) if self.body else None
 
         headers["accept"] = "application/json"
@@ -98,14 +80,13 @@ class RequestModel(BaseModel, Generic[ResponseType]):
 
         return r
 
-    def request_args_for_values(
-        self, request_args: RequestArgs, values: Dict[str, Any]
-    ) -> None:
+    def request_args_for_values(self, request_args: RequestArgs) -> None:
+        # we exclude unset properties from the request
+        values = jsonable_encoder(self, exclude_unset=True)
 
         skip_properties = ["url", "method", "response_model", "body"]
 
         for k, v in get_type_hints(self.__class__, include_extras=True).items():
-
             if k in skip_properties:
                 continue
 
@@ -114,9 +95,12 @@ class RequestModel(BaseModel, Generic[ResponseType]):
             value = values.get(k, None)
 
             if not value and getattr(self, k, None) is not None:
-                value = getattr(self, k)
+                value = jsonable_encoder(getattr(self, k))
 
-            if isinstance(annotated_property, params.Header) and annotated_property.convert_underscores:
+            if (
+                isinstance(annotated_property, params.Header)
+                and annotated_property.convert_underscores
+            ):
                 k = k.replace("_", "-")
 
             if value:
