@@ -21,11 +21,14 @@
 
 ## Features
 
-- TODO
+- Model your http requests as a pydantic model
+- Annotate your request parameters with fastapi params
+- Support voor sync & async requests
 
-## Requirements
+## Goals
 
-- TODO
+- Create a generator for an OpenAPI spec
+- Support all kinds of http requests
 
 ## Installation
 
@@ -37,7 +40,7 @@ $ pip install requestmodel
 
 ## Usage
 
-Please see the [Command-line Reference] for details.
+Please see the [implementation detail] for further instructions.
 
 ## Contributing
 
@@ -68,4 +71,4 @@ This project was generated from [@cjolowicz]'s [Hypermodern Python Cookiecutter]
 
 [license]: https://github.com/foarsitter/requestmodel/blob/main/LICENSE
 [contributor guide]: https://github.com/foarsitter/requestmodel/blob/main/CONTRIBUTING.md
-[command-line reference]: https://requestmodel.readthedocs.io/en/latest/usage.html
+[implementation detail]: https://requestmodel.readthedocs.io/en/latest/usage.html
