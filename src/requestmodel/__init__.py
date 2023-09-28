@@ -96,6 +96,7 @@ class RequestModel(BaseModel, Generic[ResponseType]):
 
             value = values.get(k, None)
 
+            # if we do not have a value but the property is set other than None
             if not value and getattr(self, k, None) is not None:
                 value = jsonable_encoder(getattr(self, k))
 
@@ -105,7 +106,7 @@ class RequestModel(BaseModel, Generic[ResponseType]):
             ):
                 k = k.replace("_", "-")
 
-            if value:
+            if value is not None:
                 request_args[type(annotated_property)][k] = value
 
     def send(self, client: Client) -> ResponseType:
