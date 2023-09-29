@@ -34,3 +34,50 @@ assert isinstance(response, MyResponse)
 assert response.name
 assert response.id
 ```
+
+There is also an IterableRequestModel
+that can be used for paginated responses by implementing `IteratorRequestModel.next()`
+
+```python
+from typing import List, Optional
+
+from httpx import Client
+
+from requestmodel import IteratorRequestModel, BaseModel
+
+
+class MyResponse(BaseModel):
+    id: int
+    name: str
+
+
+class PaginatedMyResponse(BaseModel):
+    results: List[MyResponse]
+    next: Optional[str]
+
+
+class MyPaginatedRequest(IteratorRequestModel[PaginatedMyResponse]):
+    method = "GET"
+    url = "https://example.com/api/v1/my-endpoint/{param1}"
+
+    param1: str  # will be used in the url
+    param2: int  # will be converted as a query parameter
+
+    next: Optional[str] = None  # will be used to paginate
+
+    def next(self, response: PaginatedMyResponse) -> bool:
+        # update the new request arguments
+        self.next = response.next
+        return self.next is not None
+
+
+client = Client()
+
+request = MyPaginatedRequest(param1="foo", param2=42)
+
+for response in request.send(client):
+    assert isinstance(response, MyResponse)
+    assert response.name
+    assert response.id
+
+```
