@@ -113,8 +113,11 @@ class RequestModel(BaseModel, Generic[ResponseType]):
         """Send the request synchronously"""
         r = self.as_request(client)
         response = client.send(r)
-        response.raise_for_status()
+        self.handle_error(response)
         return self.response_model.model_validate(response.json())
+
+    def handle_error(self, response: Response) -> None:
+        response.raise_for_status()
 
     async def asend(self, client: AsyncClient) -> ResponseType:
         """Send the request asynchronously"""
