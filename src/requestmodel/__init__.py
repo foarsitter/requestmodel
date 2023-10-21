@@ -7,7 +7,9 @@ from typing import Optional
 from typing import Set
 from typing import Type
 from typing import TypeVar
+from typing import get_args
 
+from fastapi._compat import field_annotation_is_scalar
 from fastapi.utils import get_path_param_names
 from httpx import AsyncClient
 from httpx import Client
@@ -44,11 +46,18 @@ def get_annotated_type(
     else:
         annotated_property = params.Query()
 
-    if isinstance(annotated_property, params.Path) and isinstance(
-        getattr(variable_type, "__origin__", None), ModelMetaclass
+    scalar_types = [params.Query, params.Path, params.Header, params.Cookie]
+
+    origin = get_args(variable_type)
+
+    if (
+        origin
+        and type(annotated_property) in scalar_types
+        and not field_annotation_is_scalar(origin[0])
     ):
         raise ValueError(
-            f"{variable_key} cannot be a Path element it is a pydantic model"
+            f"`{variable_key}` annotated as {annotated_property.__class__.__name__} can only be a scalar, "
+            f"not a `{origin[0].__name__}`"
         )
 
     return annotated_property
@@ -78,9 +87,8 @@ class RequestModel(BaseModel, Generic[ResponseType]):
 
         body = {}
 
-        for key, fields in request_args[params.Body].items():
-            for field, value in fields.items():
-                body[field] = value
+        for fields in request_args[params.Body].values():
+            body.update(**fields)
 
         is_json_request = "json" in headers.get("content-type", "")
 
