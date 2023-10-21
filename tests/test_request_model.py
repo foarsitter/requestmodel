@@ -88,7 +88,7 @@ def test_get_annotated_type() -> None:
         assert isinstance(get_annotated_type("g", hints["g"]), params.Query)
 
 
-def test_field_annotation_is_scalar():
+def test_field_annotation_is_scalar() -> None:
     class SimpleResponse(BaseModel):
         data: str
 

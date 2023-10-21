@@ -56,8 +56,8 @@ def get_annotated_type(
         and not field_annotation_is_scalar(origin[0])
     ):
         raise ValueError(
-            f"`{variable_key}` annotated as {annotated_property.__class__.__name__} can only be a scalar, "
-            f"not a `{origin[0].__name__}`"
+            f"`{variable_key}` annotated as {annotated_property.__class__.__name__} "
+            f"can only be a scalar, not a `{origin[0].__name__}`"
         )
 
     return annotated_property
@@ -85,7 +85,7 @@ class RequestModel(BaseModel, Generic[ResponseType]):
         cookies = request_args[params.Cookie]
         files = request_args[params.File]
 
-        body = {}
+        body: Dict[str, Any] = {}
 
         for fields in request_args[params.Body].values():
             body.update(**fields)
