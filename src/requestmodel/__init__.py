@@ -4,15 +4,19 @@ from typing import Dict
 from typing import Generic
 from typing import Iterator
 from typing import Optional
+from typing import Set
 from typing import Type
 from typing import TypeVar
 
+from fastapi.utils import get_path_param_names
 from httpx import AsyncClient
 from httpx import Client
 from httpx import Request
+from httpx import Response
 from httpx._client import BaseClient
 from pydantic import BaseModel
 from pydantic import ConfigDict
+from pydantic._internal._model_construction import ModelMetaclass
 from pydantic.fields import FieldInfo
 from typing_extensions import get_type_hints
 from typing_extensions import override
@@ -27,6 +31,29 @@ ResponseType = TypeVar("ResponseType", bound=BaseModel)
 RequestArgs = Dict[Type[FieldInfo], Dict[str, Any]]
 
 
+def get_annotated_type(
+    variable_key: str, variable_type: Any, path_param_names: Optional[Set[str]] = None
+) -> FieldInfo:
+    if hasattr(variable_type, "__metadata__"):
+        annotated_property = variable_type.__metadata__[0]
+    # when a key is present in the url, we annotate it as a path parameter
+    elif path_param_names and variable_key in path_param_names:
+        annotated_property = params.Path()
+    elif isinstance(variable_type, ModelMetaclass):
+        annotated_property = params.Body()
+    else:
+        annotated_property = params.Query()
+
+    if isinstance(annotated_property, params.Path) and isinstance(
+        getattr(variable_type, "__origin__", None), ModelMetaclass
+    ):
+        raise ValueError(
+            f"{variable_key} cannot be a Path element it is a pydantic model"
+        )
+
+    return annotated_property
+
+
 class RequestModel(BaseModel, Generic[ResponseType]):
     """Declarative way to define a model"""
 
@@ -36,39 +63,26 @@ class RequestModel(BaseModel, Generic[ResponseType]):
 
     response_model: ClassVar[Type[ResponseType]]  # type: ignore[misc]
 
-    body: Optional[ResponseType] = None
-
-    def get_annotated_type(self, variable_key: str, variable_type: Any) -> FieldInfo:
-        if hasattr(variable_type, "__metadata__"):
-            annotated_property = variable_type.__metadata__[0]
-        # when a key is present in the url we annotate it as a path parameter
-        elif f"{{{variable_key}}}" in self.url:
-            annotated_property = params.Path()
-        else:
-            annotated_property = params.Query()
-        return annotated_property
+    def get_path_param_names(self) -> Set[str]:
+        return get_path_param_names(self.url)
 
     def as_request(self, client: BaseClient) -> Request:
         """Transform the properties of the object into a request"""
 
-        request_args: RequestArgs = {
-            params.Query: {},
-            params.Path: {},
-            params.Cookie: {},
-            params.Header: {},
-            params.File: {},
-        }
-
-        self.request_args_for_values(request_args)
+        request_args = self.request_args_for_values()
 
         _params = request_args[params.Query]
         headers = request_args[params.Header]
         cookies = request_args[params.Cookie]
         files = request_args[params.File]
 
-        body = jsonable_encoder(self.body) if self.body else None
+        body = {}
 
-        headers["accept"] = "application/json"
+        for key, fields in request_args[params.Body].items():
+            for field, value in fields.items():
+                body[field] = value
+
+        is_json_request = "json" in headers.get("content-type", "")
 
         r = Request(
             method=self.method,
@@ -77,37 +91,50 @@ class RequestModel(BaseModel, Generic[ResponseType]):
             headers=headers,
             cookies=cookies,
             files=files,
-            json=body,
+            data=body if not is_json_request else None,
+            json=body if is_json_request else None,
         )
 
         return r
 
-    def request_args_for_values(self, request_args: RequestArgs) -> None:
+    def request_args_for_values(self) -> RequestArgs:
+        request_args: RequestArgs = {
+            params.Query: {},
+            params.Path: {},
+            params.Cookie: {},
+            params.Header: {},
+            params.File: {},
+            params.Body: {},
+        }
+
         # we exclude unset properties from the request
         values = jsonable_encoder(self, exclude_unset=True)
 
-        skip_properties = ["url", "method", "response_model", "body"]
-
-        for k, v in get_type_hints(self.__class__, include_extras=True).items():
-            if k in skip_properties:
+        for key, field in get_type_hints(self.__class__, include_extras=True).items():
+            if getattr(field, "__origin__", None) is ClassVar:
                 continue
 
-            annotated_property = self.get_annotated_type(k, v)
+            annotated_property = get_annotated_type(
+                key, field, self.get_path_param_names()
+            )
 
-            value = values.get(k, None)
-
-            # if we do not have a value but the property is set other than None
-            if not value and getattr(self, k, None) is not None:
-                value = jsonable_encoder(getattr(self, k))
+            if key in values:
+                value = values[key]
+            else:
+                if getattr(self, key, None) is not None:
+                    value = jsonable_encoder(getattr(self, key))
+                else:
+                    continue
 
             if (
                 isinstance(annotated_property, params.Header)
                 and annotated_property.convert_underscores
             ):
-                k = k.replace("_", "-")
+                key = key.replace("_", "-")
 
-            if value is not None:
-                request_args[type(annotated_property)][k] = value
+            request_args[type(annotated_property)][key] = value
+
+        return request_args
 
     def send(self, client: Client) -> ResponseType:
         """Send the request synchronously"""
