@@ -4,8 +4,6 @@ from typing import Optional
 from typing import Type
 
 from fastapi import Query
-from httpx import HTTPStatusError
-from httpx import Response
 from typing_extensions import Annotated
 
 from requestmodel import RequestModel
@@ -23,9 +21,3 @@ class LookupRequest(RequestModel[LookupResponse]):
     fl: Annotated[Optional[str], Query()] = None
 
     xyz: Optional[str] = None
-
-    def handle_error(self, response: Response) -> None:
-        try:
-            super().handle_error(response)
-        except HTTPStatusError as e:
-            raise Exception(e.response.content) from e
