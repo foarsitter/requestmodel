@@ -1,72 +1,16 @@
 from typing import ClassVar
-from typing import List
 from typing import Type
 
-from fastapi import FastAPI
-from fastapi import File
 from fastapi import Header
-from pydantic import BaseModel
-from starlette.testclient import TestClient
 from typing_extensions import Annotated
 
 from requestmodel import IteratorRequestModel
 from requestmodel import RequestModel
-
-
-app = FastAPI()
-
-
-class FileUploadResponse(BaseModel):
-    file_size: int
-    name: str
-    path: str
-    extra_header: str
-
-
-class PaginatedResponse(BaseModel):
-    items: List[int]
-    total: int
-    page: int
-    size: int
-
-
-@app.post("/files/{path}")
-async def create_file(
-    path: str,
-    name: str,
-    file: Annotated[bytes, File()],
-    extra_header: Annotated[str, Header()],
-) -> FileUploadResponse:
-    response = FileUploadResponse(
-        file_size=len(file), path=path, name=name, extra_header=extra_header
-    )
-    return response
-
-
-@app.get("/items")
-async def get_items(page: int = 1, size: int = 25) -> PaginatedResponse:
-    max_items = 100
-
-    end = min(page * size, max_items)
-    start = max(0, end - size)
-
-    return PaginatedResponse(
-        items=list(range(start, end)), total=100, page=page, size=size
-    )
-
-
-client = TestClient(app)
-
-
-class FileUploadRequest(RequestModel[FileUploadResponse]):
-    method: ClassVar[str] = "POST"
-    url: ClassVar[str] = "/files/{path}"
-    response_model: ClassVar[Type[FileUploadResponse]] = FileUploadResponse
-
-    path: str
-    name: str
-    file: Annotated[bytes, File()]
-    extra_header: Annotated[str, Header()]
+from tests.fastapi_server import client
+from tests.fastapi_server.schema import FileCreateSchema
+from tests.fastapi_server.schema import FileUploadRequest
+from tests.fastapi_server.schema import FileUploadResponse
+from tests.fastapi_server.schema import PaginatedResponse
 
 
 class PaginatedRequest(IteratorRequestModel[PaginatedResponse]):
@@ -85,6 +29,15 @@ class PaginatedRequest(IteratorRequestModel[PaginatedResponse]):
         return True
 
 
+class CreateRequest(RequestModel[FileCreateSchema]):
+    method: ClassVar[str] = "PUT"
+    url: ClassVar[str] = "/items"
+    response_model: ClassVar[Type[FileCreateSchema]] = FileCreateSchema
+
+    content_type: Annotated[str, Header()] = "application/json"
+    data: FileCreateSchema
+
+
 def test_file_upload() -> None:
     request = FileUploadRequest(
         name="test", path="test", file=b"test", extra_header="test1"
@@ -100,5 +53,18 @@ def test_file_upload() -> None:
 
 
 def test_paginated() -> None:
-    for response in PaginatedRequest(page=1, size=25).send(client):
-        print(response.page)
+    pages = 0
+    for _ in PaginatedRequest(page=1, size=25).send(client):
+        pages += 1
+
+    assert pages == 4
+
+
+def test_create() -> None:
+    request = CreateRequest(data=FileCreateSchema(name="test", path="test"))
+
+    response = request.send(client)
+
+    assert isinstance(response, FileCreateSchema)
+    assert response.name == "test"
+    assert response.path == "test"
