@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, get_origin
 from typing import ClassVar
 from typing import Dict
 from typing import Generic
@@ -9,7 +9,11 @@ from typing import Type
 from typing import TypeVar
 from typing import get_args
 
-from fastapi._compat import field_annotation_is_scalar
+from fastapi._compat import (
+    field_annotation_is_scalar,
+    field_annotation_is_complex,
+    field_annotation_is_sequence,
+)
 from fastapi.utils import get_path_param_names
 from httpx import AsyncClient
 from httpx import Client
@@ -20,7 +24,7 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic._internal._model_construction import ModelMetaclass
 from pydantic.fields import FieldInfo
-from typing_extensions import get_type_hints
+from typing_extensions import get_type_hints, Annotated
 from typing_extensions import override
 
 from requestmodel import params
@@ -36,29 +40,39 @@ RequestArgs = Dict[Type[FieldInfo], Dict[str, Any]]
 def get_annotated_type(
     variable_key: str, variable_type: Any, path_param_names: Optional[Set[str]] = None
 ) -> FieldInfo:
-    if hasattr(variable_type, "__metadata__"):
-        annotated_property = variable_type.__metadata__[0]
+    origin = get_origin(variable_type)
+
+    annotated_property = None
+
+    # check if we have a native type or an Annotated
+    if origin is Annotated:
+        origin, annotated_property = get_args(variable_type)
+
+        is_complex = field_annotation_is_complex(origin)
+        is_sequence = field_annotation_is_sequence(origin)
+    else:
+        is_complex = field_annotation_is_complex(variable_type)
+        is_sequence = field_annotation_is_sequence(variable_type)
+
+    if annotated_property:
+        annotated_property = annotated_property
     # when a key is present in the url, we annotate it as a path parameter
     elif path_param_names and variable_key in path_param_names:
         annotated_property = params.Path()
-    elif isinstance(variable_type, ModelMetaclass):
+    elif is_complex and not is_sequence:
         annotated_property = params.Body()
     else:
         annotated_property = params.Query()
 
-    scalar_types = [params.Query, params.Path, params.Header, params.Cookie]
+    scalar_types = (params.Query, params.Path, params.Header, params.Cookie)
 
-    origin = get_args(variable_type)
-
-    if (
-        origin
-        and type(annotated_property) in scalar_types
-        and not field_annotation_is_scalar(origin[0])
-    ):
-        raise ValueError(
-            f"`{variable_key}` annotated as {annotated_property.__class__.__name__} "
-            f"can only be a scalar, not a `{origin[0].__name__}`"
-        )
+    if isinstance(annotated_property, scalar_types) and is_complex:
+        # query params do accept lists
+        if not (isinstance(annotated_property, params.Query) and is_sequence):
+            raise ValueError(
+                f"`{variable_key}` annotated as {annotated_property.__class__.__name__} "
+                f"can only be a scalar, not a `{origin.__name__}`"
+            )
 
     return annotated_property
 
@@ -84,11 +98,7 @@ class RequestModel(BaseModel, Generic[ResponseType]):
         headers = request_args[params.Header]
         cookies = request_args[params.Cookie]
         files = request_args[params.File]
-
-        body: Dict[str, Any] = {}
-
-        for fields in request_args[params.Body].values():
-            body.update(**fields)
+        body = request_args[params.Body]
 
         is_json_request = "json" in headers.get("content-type", "")
 
@@ -117,14 +127,13 @@ class RequestModel(BaseModel, Generic[ResponseType]):
 
         # we exclude unset properties from the request
         values = jsonable_encoder(self, exclude_unset=True)
+        path_param_names = self.get_path_param_names()
 
         for key, field in get_type_hints(self.__class__, include_extras=True).items():
             if getattr(field, "__origin__", None) is ClassVar:
                 continue
 
-            annotated_property = get_annotated_type(
-                key, field, self.get_path_param_names()
-            )
+            annotated_property = get_annotated_type(key, field, path_param_names)
 
             if key in values:
                 value = values[key]
@@ -140,7 +149,26 @@ class RequestModel(BaseModel, Generic[ResponseType]):
             ):
                 key = key.replace("_", "-")
 
-            request_args[type(annotated_property)][key] = value
+            if isinstance(annotated_property, params.Body):
+                if isinstance(value, dict):
+                    if annotated_property.embed:
+                        request_args[type(annotated_property)][key] = value
+                    else:
+                        for nested_key, nested_value in value.items():
+                            request_args[type(annotated_property)][
+                                nested_key
+                            ] = nested_value
+                else:
+                    request_args[type(annotated_property)][key] = value
+            else:
+                request_args[type(annotated_property)][key] = value
+
+        body: Dict[str, Any] = {}
+
+        for field_name, field_value in request_args[params.Body].items():
+            body[field_name] = field_value
+
+        request_args[params.Body] = body
 
         return request_args
 
