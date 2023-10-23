@@ -28,4 +28,4 @@ def submit() -> Response:
     return jsonify({"errors": form.errors})
 
 
-client = TestClient(WSGIMiddleware(app))  # type: ignore
+client = TestClient(WSGIMiddleware(app))  # type: ignore[arg-type]

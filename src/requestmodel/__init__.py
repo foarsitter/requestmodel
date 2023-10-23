@@ -1,4 +1,4 @@
-from typing import Any, get_origin
+from typing import Any
 from typing import ClassVar
 from typing import Dict
 from typing import Generic
@@ -7,13 +7,9 @@ from typing import Optional
 from typing import Set
 from typing import Type
 from typing import TypeVar
-from typing import get_args
 
-from fastapi._compat import (
-    field_annotation_is_scalar,
-    field_annotation_is_complex,
-    field_annotation_is_sequence,
-)
+from fastapi._compat import field_annotation_is_complex
+from fastapi._compat import field_annotation_is_sequence
 from fastapi.utils import get_path_param_names
 from httpx import AsyncClient
 from httpx import Client
@@ -22,9 +18,11 @@ from httpx import Response
 from httpx._client import BaseClient
 from pydantic import BaseModel
 from pydantic import ConfigDict
-from pydantic._internal._model_construction import ModelMetaclass
 from pydantic.fields import FieldInfo
-from typing_extensions import get_type_hints, Annotated
+from typing_extensions import Annotated
+from typing_extensions import get_args
+from typing_extensions import get_origin
+from typing_extensions import get_type_hints
 from typing_extensions import override
 
 from requestmodel import params
@@ -51,6 +49,7 @@ def get_annotated_type(
         is_complex = field_annotation_is_complex(origin)
         is_sequence = field_annotation_is_sequence(origin)
     else:
+        origin = variable_type
         is_complex = field_annotation_is_complex(variable_type)
         is_sequence = field_annotation_is_sequence(variable_type)
 
@@ -69,12 +68,37 @@ def get_annotated_type(
     if isinstance(annotated_property, scalar_types) and is_complex:
         # query params do accept lists
         if not (isinstance(annotated_property, params.Query) and is_sequence):
+            annotated_name = annotated_property.__class__.__name__
+
+            # in 3.8 & 3.9 Dict does not have a __name__
+            if not hasattr(origin, "__name__"):
+                origin = get_origin(origin)
             raise ValueError(
-                f"`{variable_key}` annotated as {annotated_property.__class__.__name__} "
+                f"`{variable_key}` annotated as {annotated_name} "
                 f"can only be a scalar, not a `{origin.__name__}`"
             )
 
     return annotated_property
+
+
+def flatten_body(request_args: RequestArgs) -> None:
+    body: Dict[str, Any] = {}
+    for field_name, field_value in request_args[params.Body].items():
+        body[field_name] = field_value
+    request_args[params.Body] = body
+
+
+def unify_body(
+    annotated_property: Any, key: str, request_args: RequestArgs, value: Any
+) -> None:
+    if isinstance(value, dict):
+        if annotated_property.embed:
+            request_args[type(annotated_property)][key] = value
+        else:
+            for nested_key, nested_value in value.items():
+                request_args[type(annotated_property)][nested_key] = nested_value
+    else:
+        request_args[type(annotated_property)][key] = value
 
 
 class RequestModel(BaseModel, Generic[ResponseType]):
@@ -94,10 +118,7 @@ class RequestModel(BaseModel, Generic[ResponseType]):
 
         request_args = self.request_args_for_values()
 
-        _params = request_args[params.Query]
         headers = request_args[params.Header]
-        cookies = request_args[params.Cookie]
-        files = request_args[params.File]
         body = request_args[params.Body]
 
         is_json_request = "json" in headers.get("content-type", "")
@@ -105,10 +126,10 @@ class RequestModel(BaseModel, Generic[ResponseType]):
         r = Request(
             method=self.method,
             url=client._merge_url(self.url.format(**request_args[params.Path])),
-            params=_params,
+            params=request_args[params.Query],
             headers=headers,
-            cookies=cookies,
-            files=files,
+            cookies=request_args[params.Cookie],
+            files=request_args[params.File],
             data=body if not is_json_request else None,
             json=body if is_json_request else None,
         )
@@ -150,25 +171,11 @@ class RequestModel(BaseModel, Generic[ResponseType]):
                 key = key.replace("_", "-")
 
             if isinstance(annotated_property, params.Body):
-                if isinstance(value, dict):
-                    if annotated_property.embed:
-                        request_args[type(annotated_property)][key] = value
-                    else:
-                        for nested_key, nested_value in value.items():
-                            request_args[type(annotated_property)][
-                                nested_key
-                            ] = nested_value
-                else:
-                    request_args[type(annotated_property)][key] = value
+                unify_body(annotated_property, key, request_args, value)
             else:
                 request_args[type(annotated_property)][key] = value
 
-        body: Dict[str, Any] = {}
-
-        for field_name, field_value in request_args[params.Body].items():
-            body[field_name] = field_value
-
-        request_args[params.Body] = body
+        flatten_body(request_args)
 
         return request_args
 

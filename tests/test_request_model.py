@@ -1,19 +1,19 @@
-import typing
-from typing import Any, List, Dict
+from typing import Any
 from typing import ClassVar
+from typing import Dict
+from typing import List
 from typing import Optional
 from typing import Type
 
 import pytest
-from fastapi import params, Query
-from fastapi._compat import (
-    field_annotation_is_scalar,
-    field_annotation_is_sequence,
-    field_annotation_is_complex,
-)
-from httpx import Client
-from pydantic import BaseModel, ValidationError
-from typing_extensions import Annotated, get_origin, get_args
+from fastapi import params
+from fastapi._compat import field_annotation_is_scalar
+from fastapi._compat import field_annotation_is_sequence
+from pydantic import BaseModel
+from pydantic import ValidationError
+from typing_extensions import Annotated
+from typing_extensions import get_args
+from typing_extensions import get_origin
 from typing_extensions import get_type_hints
 
 from requestmodel import RequestModel
@@ -94,7 +94,7 @@ def test_get_annotated_type() -> None:
         assert isinstance(get_annotated_type("g", hints["g"]), params.Query)
 
 
-def test_annotated_type():
+def test_annotated_type() -> None:
     class SimpleResponse(BaseModel):
         data: str
 
@@ -111,7 +111,7 @@ def test_annotated_type():
 
     with pytest.raises(
         ValueError,
-        match="`y` annotated as Query can only be a scalar, not a `Dict`",
+        match="`y` annotated as Query can only be a scalar, not a `(.)ict`",
     ):
         get_annotated_type("y", Annotated[Dict[str, str], params.Query()])
 
@@ -132,16 +132,16 @@ def test_field_annotation_is_scalar() -> None:
     # assert field_annotation_is_complex(SimpleResponse) is True
     assert field_annotation_is_scalar(Annotated[SimpleResponse, params.Path()]) is True
 
-    # assert field_annotation_is_scalar(SimpleResponse) is False
-    # assert field_annotation_is_scalar(str) is True
-    # assert field_annotation_is_scalar(Annotated[str, params.Path()]) is True
-    # assert field_annotation_is_scalar(Annotated[SimpleResponse, params.Path()]) is True
+    assert field_annotation_is_scalar(SimpleResponse) is False
+    assert field_annotation_is_scalar(str) is True
+    assert field_annotation_is_scalar(Annotated[str, params.Path()]) is True
+    assert field_annotation_is_scalar(Annotated[SimpleResponse, params.Path()]) is True
 
 
 def test_field_annotation_with_constraints() -> None:
     class SimpleRequest(RequestModel[Any]):
-        url = "test"
-        method = "test"
+        url: ClassVar[str] = "test"
+        method: ClassVar[str] = "test"
         data: Annotated[str, params.Query(min_length=8, max_length=10)]
 
     with pytest.raises(
@@ -152,19 +152,19 @@ def test_field_annotation_with_constraints() -> None:
 
 def test_field_unified_body() -> None:
     class SimpleRequest(RequestModel[Any]):
-        url = "test"
-        method = "test"
+        url: ClassVar[str] = "test"
+        method: ClassVar[str] = "test"
         query_list: Annotated[List[int], params.Query()]
         data_str: Annotated[str, params.Body()]
         data_int: Annotated[int, params.Body()]
         data_list: Annotated[List[int], params.Body()]
         data_dict: Annotated[Dict[str, int], params.Body(embed=True)]
 
-    data = dict(
+    data: Dict[str, Any] = dict(
         data_str="test", data_int=1, data_list=[0, 1, 2], data_dict={"key": 1925}
     )
 
-    r = SimpleRequest(**data, query_list=[1, 2, 3])
+    r = SimpleRequest(query_list=[1, 2, 3], **data)
 
     x = r.request_args_for_values()
 
@@ -178,14 +178,14 @@ def test_field_unified_body() -> None:
     }
 
 
-def test_get_origin():
+def test_get_origin() -> None:
     assert get_origin(str) is None
     assert get_origin(List[str]) is list
     assert get_origin(Annotated[List[str], params.Query()]) is Annotated
     assert get_origin(Annotated[str, params.Query()]) is Annotated
 
 
-def test_get_args():
+def test_get_args() -> None:
     assert get_args(List[str]) == (str,)
     p = get_args(Annotated[List[str], params.Query()])
     assert p[0] == List[str]
