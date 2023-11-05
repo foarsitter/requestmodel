@@ -8,9 +8,7 @@ from typing import Set
 from typing import Type
 from typing import TypeVar
 
-from fastapi._compat import field_annotation_is_complex
-from fastapi._compat import field_annotation_is_sequence
-from fastapi.utils import get_path_param_names
+
 from httpx import AsyncClient
 from httpx import Client
 from httpx import Request
@@ -25,7 +23,7 @@ from typing_extensions import get_origin
 from typing_extensions import get_type_hints
 from typing_extensions import override
 
-from requestmodel import params
+from requestmodel import params, utils
 
 from .encoders import jsonable_encoder
 
@@ -46,12 +44,12 @@ def get_annotated_type(
     if origin is Annotated:
         origin, annotated_property = get_args(variable_type)
 
-        is_complex = field_annotation_is_complex(origin)
-        is_sequence = field_annotation_is_sequence(origin)
+        is_complex = utils.field_annotation_is_complex(origin)
+        is_sequence = utils.field_annotation_is_sequence(origin)
     else:
         origin = variable_type
-        is_complex = field_annotation_is_complex(variable_type)
-        is_sequence = field_annotation_is_sequence(variable_type)
+        is_complex = utils.field_annotation_is_complex(variable_type)
+        is_sequence = utils.field_annotation_is_sequence(variable_type)
 
     if annotated_property:
         annotated_property = annotated_property
@@ -111,7 +109,7 @@ class RequestModel(BaseModel, Generic[ResponseType]):
     response_model: ClassVar[Type[ResponseType]]  # type: ignore[misc]
 
     def get_path_param_names(self) -> Set[str]:
-        return get_path_param_names(self.url)
+        return utils.get_path_param_names(self.url)
 
     def as_request(self, client: BaseClient) -> Request:
         """Transform the properties of the object into a request"""
@@ -179,15 +177,15 @@ class RequestModel(BaseModel, Generic[ResponseType]):
 
         return request_args
 
+    def handle_error(self, response: Response) -> None:
+        response.raise_for_status()
+
     def send(self, client: Client) -> ResponseType:
         """Send the request synchronously"""
         r = self.as_request(client)
         response = client.send(r)
         self.handle_error(response)
         return self.response_model.model_validate(response.json())
-
-    def handle_error(self, response: Response) -> None:
-        response.raise_for_status()
 
     async def asend(self, client: AsyncClient) -> ResponseType:
         """Send the request asynchronously"""
