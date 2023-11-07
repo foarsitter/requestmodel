@@ -4,8 +4,8 @@ from typing import Type
 from fastapi import Header
 from typing_extensions import Annotated
 
-from requestmodel import IteratorRequestModel
-from requestmodel import RequestModel
+from requestmodel.model import IteratorRequestModel
+from requestmodel.model import RequestModel
 from tests.fastapi_server import client
 from tests.fastapi_server.schema import FileCreateSchema
 from tests.fastapi_server.schema import FileUploadRequest

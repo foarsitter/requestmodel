@@ -17,7 +17,7 @@ from typing_extensions import get_origin
 from typing_extensions import get_type_hints
 
 from requestmodel import RequestModel
-from requestmodel import get_annotated_type
+from requestmodel.utils import get_annotated_type
 
 
 def test_request_args_for_values() -> None:

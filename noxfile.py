@@ -150,7 +150,14 @@ def mypy(session: Session) -> None:
     args = session.posargs or ["src", "tests", "docs/conf.py"]
     session.install(".")
     session.install(
-        "mypy", "pytest", "pytest-asyncio", "python-multipart", "flask-wtf", "a2wsgi"
+        "mypy",
+        "pytest",
+        "pytest-asyncio",
+        "python-multipart",
+        "flask-wtf",
+        "a2wsgi",
+        "requests",
+        "types-requests",
     )
     session.run("mypy", *args)
     if not session.posargs:
@@ -169,6 +176,7 @@ def tests(session: Session) -> None:
         "flask-wtf",
         "a2wsgi",
         "pygments",
+        "requests",
     )
     try:
         session.run("coverage", "run", "--parallel", "-m", "pytest", *session.posargs)

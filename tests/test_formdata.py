@@ -5,7 +5,7 @@ from typing import Type
 
 from pydantic import BaseModel
 
-from requestmodel import RequestModel
+from requestmodel.model import RequestModel
 from tests.flask_server import client
 
 

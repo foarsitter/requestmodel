@@ -20,11 +20,19 @@ python = ">=3.8"
 fastapi = "*"
 httpx = "*"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.requests.dependencies]
+requests = "^2.31.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest-asyncio = "^0.21.1"
+python-multipart = "^0.0.6"
+flask-wtf = "^1.2.1"
+flask-pytest = "^0.0.5"
+a2wsgi = "^1.8.0"
 Pygments = ">=2.10.0"
 bandit = ">=1.7.4"
 black = ">=21.10b0"
-coverage = {extras = ["toml"], version = ">=6.2"}
+coverage = { extras = ["toml"], version = ">=6.2" }
 flake8 = ">=4.0.1"
 flake8-bugbear = ">=21.9.2"
 flake8-docstrings = ">=1.6.0"
@@ -41,15 +49,8 @@ safety = ">=1.10.3"
 sphinx = ">=4.3.2"
 sphinx-autobuild = ">=2021.3.14"
 typeguard = ">=2.13.3"
-xdoctest = {extras = ["colors"], version = ">=0.15.10"}
-myst-parser = {version = ">=0.16.1"}
-
-[tool.poetry.group.dev.dependencies]
-pytest-asyncio = "^0.21.1"
-python-multipart = "^0.0.6"
-flask-wtf = "^1.2.1"
-flask-pytest = "^0.0.5"
-a2wsgi = "^1.8.0"
+xdoctest = { extras = ["colors"], version = ">=0.15.10" }
+myst-parser = { version = ">=0.16.1" }
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
@@ -70,7 +71,7 @@ lines_after_imports = 2
 
 [tool.mypy]
 plugins = [
-  "pydantic.mypy"
+    "pydantic.mypy"
 ]
 
 follow_imports = "silent"
