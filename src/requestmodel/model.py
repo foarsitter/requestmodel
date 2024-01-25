@@ -1,6 +1,7 @@
-from typing import ClassVar, Optional
+from typing import ClassVar
 from typing import Generic
 from typing import Iterator
+from typing import Optional
 from typing import Set
 from typing import Type
 
@@ -11,13 +12,19 @@ from httpx import Response
 from httpx._client import BaseClient
 from pydantic import BaseModel
 from pydantic import ConfigDict
+from pydantic import TypeAdapter
 from typing_extensions import get_type_hints
 from typing_extensions import override
 
-from requestmodel import params, utils
+from requestmodel import params
+from requestmodel import utils
+
 from .encoders import jsonable_encoder
-from .typing import ResponseType, RequestArgs
-from .utils import get_annotated_type, flatten_body, unify_body
+from .typing import RequestArgs
+from .typing import ResponseType
+from .utils import flatten_body
+from .utils import get_annotated_type
+from .utils import unify_body
 
 
 class BaseRequestModel(BaseModel, Generic[ResponseType]):
@@ -90,6 +97,8 @@ class RequestModel(BaseRequestModel[ResponseType]):
         r = self.as_request(client)
         self.response = client.send(r)
         self.handle_error(self.response)
+        if isinstance(self.response_model, TypeAdapter):
+            return self.response_model.validate_python(self.response.json())
         return self.response_model.model_validate(self.response.json())
 
     async def asend(self, client: AsyncClient) -> ResponseType:
