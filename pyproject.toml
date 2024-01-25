@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "requestmodel"
-version = "0.4.0"
+version = "0.5.0"
 description = "requestmodel"
 authors = ["Jelmer Draaijer <info@jelmert.nl>"]
 license = "MIT"
