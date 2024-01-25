@@ -1,7 +1,8 @@
 from typing import Optional
 
-from pydantic import Field
-from requests import Request, Response, Session
+from requests import Request
+from requests import Response
+from requests import Session
 from requests.adapters import BaseAdapter
 
 from requestmodel import params
