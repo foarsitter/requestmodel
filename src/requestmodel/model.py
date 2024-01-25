@@ -118,6 +118,8 @@ class RequestModel(BaseRequestModel[ResponseType]):
 
 
 class IteratorRequestModel(RequestModel[ResponseType]):
+    response: Optional[Response] = None
+
     def next(self, response: ResponseType) -> bool:  # pragma: no cover
         raise NotImplementedError
 
