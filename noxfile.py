@@ -208,6 +208,7 @@ def typeguard(session: Session) -> None:
         "python-multipart",
         "flask-wtf",
         "a2wsgi",
+        "requests",
         "typeguard",
         "pygments",
     )

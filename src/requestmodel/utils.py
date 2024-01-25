@@ -1,8 +1,16 @@
-from typing import Union, Type, Any, Set, Optional, Dict
-from typing_extensions import get_origin, Annotated, get_args
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import Set
+from typing import Type
+from typing import Union
 
-from fastapi import _compat, utils
+from fastapi import _compat
+from fastapi import utils
 from pydantic.fields import FieldInfo
+from typing_extensions import Annotated
+from typing_extensions import get_args
+from typing_extensions import get_origin
 
 from requestmodel import params
 from requestmodel.typing import RequestArgs

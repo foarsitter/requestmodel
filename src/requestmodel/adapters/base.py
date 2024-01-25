@@ -1,4 +1,6 @@
-from typing import Type, Dict, Any
+from typing import Any
+from typing import Dict
+from typing import Type
 
 
 class BaseAdapter:
