@@ -14,7 +14,11 @@ class HTTPXAdapter(BaseAdapter):
     def transform(self, client: BaseClient, model: RequestModel[Any]) -> Request:
         request_args = model.request_args_for_values()
 
-        headers = request_args[params.Header]
+        headers = client.headers
+
+        if request_args[params.Header]:
+            headers.update(request_args[params.Header])
+
         body = request_args[params.Body]
 
         is_json_request = "json" in headers.get("content-type", "")
