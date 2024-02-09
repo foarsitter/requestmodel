@@ -6,16 +6,18 @@ from pathlib import PurePath
 from requestmodel.encoders import jsonable_encoder
 
 
+class XEnum(str, Enum):
+    a = "a"
+    b = "b"
+
+
+@dataclass
+class XDataclass:
+    a: str
+    b: int
+
+
 def test_encoder_by_type() -> None:
-    class XEnum(str, Enum):
-        a = "a"
-        b = "b"
-
-    @dataclass
-    class XDataclass:
-        a: str
-        b: int
-
     assert jsonable_encoder(XEnum.a) == "a"
     assert jsonable_encoder(XEnum.b) == "b"
     assert jsonable_encoder(PurePath("syz")) == "syz"
