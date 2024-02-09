@@ -82,7 +82,7 @@ class BaseRequestModel(BaseModel, Generic[ResponseType]):
 
 
 class RequestModel(BaseRequestModel[ResponseType]):
-    response: Optional[Response] = None
+    raw_response: Optional[Response] = None
 
     def handle_error(self, response: Response) -> None:
         response.raise_for_status()
@@ -90,16 +90,16 @@ class RequestModel(BaseRequestModel[ResponseType]):
     def send(self, client: Client) -> ResponseType:
         """Send the request synchronously"""
         r = self.as_request(client)
-        self.response = client.send(r)
-        self.handle_error(self.response)
-        return self.response_model.model_validate(self.response.json())
+        self.raw_response = client.send(r)
+        self.handle_error(self.raw_response)
+        return self.response_model.model_validate(self.raw_response.json())
 
     async def asend(self, client: AsyncClient) -> ResponseType:
         """Send the request asynchronously"""
         r = self.as_request(client)
-        self.response = await client.send(r)
-        self.handle_error(self.response)
-        return self.response_model.model_validate(self.response.json())
+        self.raw_response = await client.send(r)
+        self.handle_error(self.raw_response)
+        return self.response_model.model_validate(self.raw_response.json())
 
     def as_request(self, client: BaseClient) -> Request:
         """Transform the properties of the object into a request"""
@@ -111,15 +111,25 @@ class RequestModel(BaseRequestModel[ResponseType]):
 
 
 class IteratorRequestModel(RequestModel[ResponseType]):
-    def next(self, response: ResponseType) -> bool:  # pragma: no cover
+    raw_response: Optional[Response] = None
+
+    def next_from_response(self, response: ResponseType) -> bool:  # pragma: no cover
+        """
+        Prepare the current object for the next request and return true
+
+        In case of cursor pagination set the next token
+        In case of offset pagination increment the offset
+
+        """
         raise NotImplementedError
 
     @override
     def send(self, client: Client) -> Iterator[ResponseType]:  # type: ignore[override]
         response = super().send(client)
         yield response
-        self.response = None
-        while self.next(response):
-            self.response = None
+
+        while self.next_from_response(response):
+            # avoid serializing the response
+            self.raw_response = None
             response = super().send(client)
             yield response
