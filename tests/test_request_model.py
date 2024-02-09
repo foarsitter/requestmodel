@@ -6,7 +6,7 @@ from typing import Optional
 from typing import Type
 
 import pytest
-from fastapi import params
+
 from fastapi._compat import field_annotation_is_scalar
 from fastapi._compat import field_annotation_is_sequence
 from pydantic import BaseModel
@@ -17,6 +17,7 @@ from typing_extensions import get_origin
 from typing_extensions import get_type_hints
 
 from requestmodel import RequestModel
+from requestmodel import params
 from requestmodel.utils import get_annotated_type
 
 

@@ -1,23 +1,84 @@
-from typing import Union, Type, Any, Set, Optional, Dict
+import re
+from collections import deque
+from dataclasses import is_dataclass
+from types import UnionType
+from typing import (
+    Union,
+    Type,
+    Any,
+    Set,
+    Optional,
+    Dict,
+    Mapping,
+    Sequence,
+    List,
+    Tuple,
+    FrozenSet,
+    Deque,
+)
+
+from pydantic import BaseModel
+from pydantic._internal._utils import lenient_issubclass
 from typing_extensions import get_origin, Annotated, get_args
 
-from fastapi import _compat, utils
 from pydantic.fields import FieldInfo
 
-from requestmodel import params
-from requestmodel.typing import RequestArgs
+from . import params
+from .typing import RequestArgs
+
+
+sequence_annotation_to_type = {
+    Sequence: list,
+    List: list,
+    list: list,
+    Tuple: tuple,
+    tuple: tuple,
+    Set: set,
+    set: set,
+    FrozenSet: frozenset,
+    frozenset: frozenset,
+    Deque: deque,
+    deque: deque,
+}
+
+sequence_types = tuple(sequence_annotation_to_type.keys())
+
+
+def _annotation_is_sequence(annotation: Union[Type[Any], None]) -> bool:
+    if lenient_issubclass(annotation, (str, bytes)):
+        return False
+    return lenient_issubclass(annotation, sequence_types)
+
+
+def _annotation_is_complex(annotation: Union[Type[Any], None]) -> bool:
+    return (
+        lenient_issubclass(annotation, (BaseModel, Mapping))
+        or _annotation_is_sequence(annotation)
+        or is_dataclass(annotation)
+    )
 
 
 def field_annotation_is_complex(annotation: Union[Type[Any], None]) -> bool:
-    return _compat.field_annotation_is_complex(annotation)
+    origin = get_origin(annotation)
+    if origin is Union or origin is UnionType:
+        return any(field_annotation_is_complex(arg) for arg in get_args(annotation))
+
+    return (
+        _annotation_is_complex(annotation)
+        or _annotation_is_complex(origin)
+        or hasattr(origin, "__pydantic_core_schema__")
+        or hasattr(origin, "__get_pydantic_core_schema__")
+    )
 
 
 def field_annotation_is_sequence(annotation: Union[Type[Any], None]) -> bool:
-    return _compat.field_annotation_is_sequence(annotation)
+    return _annotation_is_sequence(annotation) or _annotation_is_sequence(
+        get_origin(annotation)
+    )
 
 
 def get_path_param_names(path: str) -> Set[str]:
-    return utils.get_path_param_names(path)
+    return set(re.findall("{(.*?)}", path))
 
 
 def get_annotated_type(

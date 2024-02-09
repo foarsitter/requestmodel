@@ -1,11 +1,12 @@
 from typing import ClassVar
 from typing import Type
 
-from fastapi import Header
+
 from typing_extensions import Annotated
 
 from requestmodel.model import IteratorRequestModel
 from requestmodel.model import RequestModel
+from requestmodel.params import Header
 from tests.fastapi_server import client
 from tests.fastapi_server.schema import FileCreateSchema
 from tests.fastapi_server.schema import FileUploadRequest
