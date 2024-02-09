@@ -1,4 +1,5 @@
 """Nox sessions."""
+
 import os
 import shlex
 import shutil
@@ -156,6 +157,7 @@ def mypy(session: Session) -> None:
         "python-multipart",
         "flask-wtf",
         "a2wsgi",
+        "fastapi",
         "requests",
         "types-requests",
     )
@@ -175,6 +177,7 @@ def tests(session: Session) -> None:
         "python-multipart",
         "flask-wtf",
         "a2wsgi",
+        "fastapi",
         "pygments",
         "requests",
     )
@@ -208,7 +211,9 @@ def typeguard(session: Session) -> None:
         "python-multipart",
         "flask-wtf",
         "a2wsgi",
+        "fastapi",
         "typeguard",
+        "requests",
         "pygments",
     )
     session.run("pytest", f"--typeguard-packages={package}", *session.posargs)

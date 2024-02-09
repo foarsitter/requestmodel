@@ -7,8 +7,8 @@ from typing_extensions import Annotated
 
 from requestmodel import RequestModel
 from requestmodel.adapters.requests import RequestsRequestModel
-
 from requestmodel.params import Query
+
 from .models import LookupResponse
 
 

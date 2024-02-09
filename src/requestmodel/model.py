@@ -1,6 +1,7 @@
-from typing import ClassVar, Optional
+from typing import ClassVar
 from typing import Generic
 from typing import Iterator
+from typing import Optional
 from typing import Set
 from typing import Type
 
@@ -14,10 +15,15 @@ from pydantic import ConfigDict
 from typing_extensions import get_type_hints
 from typing_extensions import override
 
-from requestmodel import params, utils
+from requestmodel import params
+from requestmodel import utils
+
 from .encoders import jsonable_encoder
-from .typing import ResponseType, RequestArgs
-from .utils import get_annotated_type, flatten_body, unify_body
+from .typing import RequestArgs
+from .typing import ResponseType
+from .utils import flatten_body
+from .utils import get_annotated_type
+from .utils import unify_body
 
 
 class BaseRequestModel(BaseModel, Generic[ResponseType]):

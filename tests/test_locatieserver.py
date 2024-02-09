@@ -1,11 +1,13 @@
 """Testing the LookupRequest."""
+
 import pytest
 from httpx import AsyncClient
 from httpx import Client
 from requests import Session
 
 from tests.locatieserver.models import LookupResponse
-from tests.locatieserver.requests import LookupRequest, LookupRequests
+from tests.locatieserver.requests import LookupRequest
+from tests.locatieserver.requests import LookupRequests
 
 
 def test_lookup_request_sync() -> None:

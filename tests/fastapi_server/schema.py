@@ -2,7 +2,6 @@ from typing import ClassVar
 from typing import List
 from typing import Type
 
-
 from pydantic import BaseModel
 from typing_extensions import Annotated
 

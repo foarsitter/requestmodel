@@ -1,7 +1,6 @@
 from typing import ClassVar
 from typing import Type
 
-
 from typing_extensions import Annotated
 
 from requestmodel.model import IteratorRequestModel

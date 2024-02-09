@@ -1,31 +1,32 @@
 import re
+import types
 from collections import deque
 from dataclasses import is_dataclass
-from types import UnionType
-from typing import (
-    Union,
-    Type,
-    Any,
-    Set,
-    Optional,
-    Dict,
-    Mapping,
-    Sequence,
-    List,
-    Tuple,
-    FrozenSet,
-    Deque,
-)
+from typing import Any
+from typing import Deque
+from typing import Dict
+from typing import FrozenSet
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import Sequence
+from typing import Set
+from typing import Tuple
+from typing import Type
+from typing import Union
 
 from pydantic import BaseModel
 from pydantic._internal._utils import lenient_issubclass
-from typing_extensions import get_origin, Annotated, get_args
-
 from pydantic.fields import FieldInfo
+from typing_extensions import Annotated
+from typing_extensions import get_args
+from typing_extensions import get_origin
 
 from . import params
 from .typing import RequestArgs
 
+
+UnionType = getattr(types, "UnionType", Union)
 
 sequence_annotation_to_type = {
     Sequence: list,

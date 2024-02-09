@@ -18,6 +18,7 @@ Changelog = "https://github.com/foarsitter/requestmodel/releases"
 [tool.poetry.dependencies]
 python = ">=3.8"
 httpx = "*"
+pydantic = "^2.0.0"
 
 [tool.poetry.group.requests.dependencies]
 requests = "^2.31.0"

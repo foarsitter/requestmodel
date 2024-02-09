@@ -1,31 +1,44 @@
 """
 Copied from fastapi.encoders
 """
+
 import dataclasses
 import datetime
-from collections import defaultdict, deque
+from collections import defaultdict
+from collections import deque
 from decimal import Decimal
 from enum import Enum
-from ipaddress import (
-    IPv4Address,
-    IPv4Interface,
-    IPv4Network,
-    IPv6Address,
-    IPv6Interface,
-    IPv6Network,
-)
-from pathlib import Path, PurePath
+from ipaddress import IPv4Address
+from ipaddress import IPv4Interface
+from ipaddress import IPv4Network
+from ipaddress import IPv6Address
+from ipaddress import IPv6Interface
+from ipaddress import IPv6Network
+from pathlib import Path
+from pathlib import PurePath
 from re import Pattern
 from types import GeneratorType
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union, Set
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Set
+from typing import Tuple
+from typing import Type
+from typing import Union
 from uuid import UUID
 
 from pydantic import BaseModel
 from pydantic.color import Color
-from pydantic.networks import AnyUrl, NameEmail
-from pydantic.types import SecretBytes, SecretStr
+from pydantic.networks import AnyUrl
+from pydantic.networks import NameEmail
+from pydantic.types import SecretBytes
+from pydantic.types import SecretStr
 from pydantic_core import Url as Url
-from typing_extensions import Annotated, Doc  # type: ignore [attr-defined]
+from typing_extensions import Annotated
+from typing_extensions import Doc
+
 
 IncEx = Union[Set[int], Set[str], Dict[int, Any], Dict[str, Any]]
 
@@ -102,7 +115,7 @@ def generate_encoders_by_class_tuples(
 encoders_by_class_tuples = generate_encoders_by_class_tuples(ENCODERS_BY_TYPE)
 
 
-def jsonable_encoder(
+def jsonable_encoder(  # noqa: C901
     obj: Annotated[
         Any,
         Doc(
@@ -203,7 +216,7 @@ def jsonable_encoder(
 
     Read more about it in the
     [FastAPI docs for JSON Compatible Encoder](https://fastapi.tiangolo.com/tutorial/encoder/).
-    """
+    """  # noqa: B950
 
     if include is not None and not isinstance(include, (set, dict)):
         include = set(include)

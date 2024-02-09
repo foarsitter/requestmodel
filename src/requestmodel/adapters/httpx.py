@@ -3,8 +3,9 @@ from typing import Any
 from httpx import Request
 from httpx._client import BaseClient
 
-from requestmodel.model import RequestModel
 from requestmodel.adapters.base import BaseAdapter
+from requestmodel.model import RequestModel
+
 from .. import params
 
 
