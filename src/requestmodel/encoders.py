@@ -25,7 +25,6 @@ from typing import List
 from typing import Optional
 from typing import Set
 from typing import Tuple
-from typing import Type
 from typing import Union
 from uuid import UUID
 
@@ -36,9 +35,6 @@ from pydantic.networks import NameEmail
 from pydantic.types import SecretBytes
 from pydantic.types import SecretStr
 from pydantic_core import Url as Url
-from typing_extensions import Annotated
-from typing_extensions import Doc
-
 
 IncEx = Union[Set[int], Set[str], Dict[int, Any], Dict[str, Any]]
 
@@ -71,7 +67,7 @@ def decimal_encoder(dec_value: Decimal) -> Union[int, float]:
         return float(dec_value)
 
 
-ENCODERS_BY_TYPE: Dict[Type[Any], Callable[[Any], Any]] = {
+ENCODERS_BY_TYPE: Dict[Any, Callable[[Any], Any]] = {
     bytes: lambda o: o.decode(),
     Color: str,
     datetime.date: isoformat,
@@ -116,94 +112,15 @@ encoders_by_class_tuples = generate_encoders_by_class_tuples(ENCODERS_BY_TYPE)
 
 
 def jsonable_encoder(  # noqa: C901
-    obj: Annotated[
-        Any,
-        Doc(
-            """
-            The input object to convert to JSON.
-            """
-        ),
-    ],
-    include: Annotated[
-        Optional[IncEx],
-        Doc(
-            """
-            Pydantic's `include` parameter, passed to Pydantic models to set the
-            fields to include.
-            """
-        ),
-    ] = None,
-    exclude: Annotated[
-        Optional[IncEx],
-        Doc(
-            """
-            Pydantic's `exclude` parameter, passed to Pydantic models to set the
-            fields to exclude.
-            """
-        ),
-    ] = None,
-    by_alias: Annotated[
-        bool,
-        Doc(
-            """
-            Pydantic's `by_alias` parameter, passed to Pydantic models to define if
-            the output should use the alias names (when provided) or the Python
-            attribute names. In an API, if you set an alias, it's probably because you
-            want to use it in the result, so you probably want to leave this set to
-            `True`.
-            """
-        ),
-    ] = True,
-    exclude_unset: Annotated[
-        bool,
-        Doc(
-            """
-            Pydantic's `exclude_unset` parameter, passed to Pydantic models to define
-            if it should exclude from the output the fields that were not explicitly
-            set (and that only had their default values).
-            """
-        ),
-    ] = False,
-    exclude_defaults: Annotated[
-        bool,
-        Doc(
-            """
-            Pydantic's `exclude_defaults` parameter, passed to Pydantic models to define
-            if it should exclude from the output the fields that had the same default
-            value, even when they were explicitly set.
-            """
-        ),
-    ] = False,
-    exclude_none: Annotated[
-        bool,
-        Doc(
-            """
-            Pydantic's `exclude_none` parameter, passed to Pydantic models to define
-            if it should exclude from the output any fields that have a `None` value.
-            """
-        ),
-    ] = False,
-    custom_encoder: Annotated[
-        Optional[Dict[Any, Callable[[Any], Any]]],
-        Doc(
-            """
-            Pydantic's `custom_encoder` parameter, passed to Pydantic models to define
-            a custom encoder.
-            """
-        ),
-    ] = None,
-    sqlalchemy_safe: Annotated[
-        bool,
-        Doc(
-            """
-            Exclude from the output any fields that start with the name `_sa`.
-
-            This is mainly a hack for compatibility with SQLAlchemy objects, they
-            store internal SQLAlchemy-specific state in attributes named with `_sa`,
-            and those objects can't (and shouldn't be) serialized to JSON.
-            """
-        ),
-    ] = True,
+    obj: Any,
+    include: Optional[IncEx] = None,
+    exclude: Optional[IncEx] = None,
+    by_alias: bool = True,
+    exclude_unset: bool = False,
+    exclude_defaults: bool = False,
+    exclude_none: bool = False,
+    custom_encoder: Optional[Dict[Any, Callable[[Any], Any]]] = None,
+    sqlalchemy_safe: bool = True,
 ) -> Any:
     """
     Convert any object to something that can be encoded in JSON.

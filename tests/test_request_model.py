@@ -156,6 +156,7 @@ class SimpleRequest2(RequestModel[SimpleResponse]):
     data_int: Annotated[int, params.Body()]
     data_list: Annotated[List[int], params.Body()]
     data_dict: Annotated[Dict[str, int], params.Body(embed=True)]
+    response_model: ClassVar[Type[SimpleResponse]] = SimpleResponse
 
 
 def test_field_annotation_with_constraints() -> None:

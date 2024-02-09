@@ -12,7 +12,6 @@ from typing import Optional
 from typing import Sequence
 from typing import Set
 from typing import Tuple
-from typing import Type
 from typing import Union
 
 from pydantic import BaseModel
@@ -24,7 +23,6 @@ from typing_extensions import get_origin
 
 from . import params
 from .typing import RequestArgs
-
 
 UnionType = getattr(types, "UnionType", Union)
 
@@ -45,13 +43,13 @@ sequence_annotation_to_type = {
 sequence_types = tuple(sequence_annotation_to_type.keys())
 
 
-def _annotation_is_sequence(annotation: Union[Type[Any], None]) -> bool:
+def _annotation_is_sequence(annotation: Any) -> bool:
     if lenient_issubclass(annotation, (str, bytes)):
         return False
     return lenient_issubclass(annotation, sequence_types)
 
 
-def _annotation_is_complex(annotation: Union[Type[Any], None]) -> bool:
+def _annotation_is_complex(annotation: Any) -> bool:
     return (
         lenient_issubclass(annotation, (BaseModel, Mapping))
         or _annotation_is_sequence(annotation)
@@ -59,7 +57,9 @@ def _annotation_is_complex(annotation: Union[Type[Any], None]) -> bool:
     )
 
 
-def field_annotation_is_complex(annotation: Union[Type[Any], None]) -> bool:
+def field_annotation_is_complex(
+    annotation: Any,
+) -> bool:
     origin = get_origin(annotation)
     if origin is Union or origin is UnionType:
         return any(field_annotation_is_complex(arg) for arg in get_args(annotation))
@@ -72,7 +72,7 @@ def field_annotation_is_complex(annotation: Union[Type[Any], None]) -> bool:
     )
 
 
-def field_annotation_is_sequence(annotation: Union[Type[Any], None]) -> bool:
+def field_annotation_is_sequence(annotation: Any) -> bool:
     return _annotation_is_sequence(annotation) or _annotation_is_sequence(
         get_origin(annotation)
     )
