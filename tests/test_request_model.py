@@ -33,8 +33,21 @@ def test_request_args_for_values() -> None:
         method: ClassVar[str] = "POST"
         response_model: ClassVar[Type[SimpleResponse]] = SimpleResponse
         body: SimpleBody
+        header_underscore: Annotated[
+            str, params.Header(convert_underscores=False, alias="X_Test")
+        ]
+        header: Annotated[
+            str, params.Header(convert_underscores=False, alias="X-Scored")
+        ]
+        excluded: Annotated[str, params.Header(exclude=True)]
 
-    x = ModelWithClassVar(body=SimpleBody(data="test"))
+    header_value = "test"
+    x = ModelWithClassVar(
+        body=SimpleBody(data="test"),
+        header_underscore=header_value,
+        header=header_value + "2",
+        excluded="not present in the output",
+    )
 
     v = x.request_args_for_values()
 
@@ -42,6 +55,10 @@ def test_request_args_for_values() -> None:
     assert "method" not in v
     assert "body" not in v
     assert "response_model" not in v
+    assert "X_Test" in v[params.Header]
+    assert v[params.Header]["X_Test"] == header_value
+    assert v[params.Header]["X-Scored"] == header_value + "2"
+    assert "excluded" not in v[params.Header]
 
 
 def test_none_as_query_param_value() -> None:

@@ -63,16 +63,18 @@ class BaseRequestModel(BaseModel, Generic[ResponseType]):
                 else:
                     continue
 
+            attr_name = annotated_property.alias or key
+
             if (
                 isinstance(annotated_property, params.Header)
                 and annotated_property.convert_underscores
             ):
-                key = key.replace("_", "-")
+                attr_name = attr_name.replace("_", "-")
 
             if isinstance(annotated_property, params.Body):
-                unify_body(annotated_property, key, request_args, value)
+                unify_body(annotated_property, attr_name, request_args, value)
             else:
-                request_args[type(annotated_property)][key] = value
+                request_args[type(annotated_property)][attr_name] = value
 
         flatten_body(request_args)
 
