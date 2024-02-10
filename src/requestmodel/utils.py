@@ -24,6 +24,7 @@ from typing_extensions import get_origin
 from . import params
 from .typing import RequestArgs
 
+
 UnionType = getattr(types, "UnionType", Union)
 
 sequence_annotation_to_type = {
