@@ -60,7 +60,7 @@ tests = ["tests", "*/tests"]
 [tool.coverage.run]
 branch = true
 source = ["requestmodel", "tests"]
-omit = ["src/requestmodel/encoders.py"]
+omit = ["src/requestmodel/encoders.py", '**/encoders.py']
 
 [tool.coverage.report]
 show_missing = true
