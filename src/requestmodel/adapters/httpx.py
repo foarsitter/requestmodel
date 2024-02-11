@@ -1,18 +1,18 @@
-from typing import Any
-
 from httpx import Request
 from httpx._client import BaseClient
 
+from requestmodel import params
 from requestmodel.adapters.base import BaseAdapter
 from requestmodel.model import RequestModel
-
-from .. import params
+from requestmodel.typing import ResponseType
 
 
 class HTTPXAdapter(BaseAdapter):
     name = "httpx"
 
-    def transform(self, client: BaseClient, model: RequestModel[Any]) -> Request:
+    def transform(
+        self, client: BaseClient, model: RequestModel[ResponseType]
+    ) -> Request:
         request_args = model.request_args_for_values()
 
         headers = request_args[params.Header]

@@ -1,4 +1,5 @@
 """Testing the LookupRequest."""
+
 import pytest
 from httpx import AsyncClient
 from httpx import Client

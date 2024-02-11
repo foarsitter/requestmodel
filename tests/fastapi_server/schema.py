@@ -2,13 +2,11 @@ from typing import ClassVar
 from typing import List
 from typing import Type
 
-from fastapi import File
-from fastapi import Header
-from fastapi import params
 from pydantic import BaseModel
 from typing_extensions import Annotated
 
 from requestmodel import RequestModel
+from requestmodel import params
 
 
 class FileUploadResponse(BaseModel):
@@ -38,5 +36,5 @@ class FileUploadRequest(RequestModel[FileUploadResponse]):
 
     path: str
     name: str
-    file: Annotated[bytes, File()]
-    extra_header: Annotated[str, Header()]
+    file: Annotated[bytes, params.File()]
+    extra_header: Annotated[str, params.Header()]

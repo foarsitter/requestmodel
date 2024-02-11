@@ -3,11 +3,11 @@ from typing import Literal
 from typing import Optional
 from typing import Type
 
-from fastapi import Query
 from typing_extensions import Annotated
 
 from requestmodel import RequestModel
 from requestmodel.adapters.requests import RequestsRequestModel
+from requestmodel.params import Query
 
 from .models import LookupResponse
 

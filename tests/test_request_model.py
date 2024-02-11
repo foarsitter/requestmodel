@@ -6,7 +6,6 @@ from typing import Optional
 from typing import Type
 
 import pytest
-from fastapi import params
 from fastapi._compat import field_annotation_is_scalar
 from fastapi._compat import field_annotation_is_sequence
 from pydantic import BaseModel
@@ -17,23 +16,45 @@ from typing_extensions import get_origin
 from typing_extensions import get_type_hints
 
 from requestmodel import RequestModel
+from requestmodel import params
 from requestmodel.utils import get_annotated_type
 
 
+class SimpleResponse(BaseModel):
+    data: str
+
+
+class SimpleBody(BaseModel):
+    data: str
+
+
+class ModelWithClassVar(RequestModel[SimpleResponse]):
+    url: ClassVar[str] = "test"
+    method: ClassVar[str] = "POST"
+    response_model: ClassVar[Type[SimpleResponse]] = SimpleResponse
+    body: SimpleBody
+    header_underscore: Annotated[
+        str, params.Header(convert_underscores=False, alias="X_Test")
+    ]
+    header: Annotated[str, params.Header(convert_underscores=False, alias="X-Scored")]
+    excluded: Annotated[str, params.Header(exclude=True)]
+
+
+class ModelWithClassVar2(RequestModel[SimpleResponse]):
+    url: ClassVar[str] = "test"
+    method: ClassVar[str] = "POST"
+    response_model: ClassVar[Type[SimpleResponse]] = SimpleResponse
+    page: Optional[int]
+
+
 def test_request_args_for_values() -> None:
-    class SimpleResponse(BaseModel):
-        data: str
-
-    class SimpleBody(BaseModel):
-        data: str
-
-    class ModelWithClassVar(RequestModel[SimpleResponse]):
-        url: ClassVar[str] = "test"
-        method: ClassVar[str] = "POST"
-        response_model: ClassVar[Type[SimpleResponse]] = SimpleResponse
-        body: SimpleBody
-
-    x = ModelWithClassVar(body=SimpleBody(data="test"))
+    header_value = "test"
+    x = ModelWithClassVar(
+        body=SimpleBody(data="test"),
+        header_underscore=header_value,
+        header=header_value + "2",
+        excluded="not present in the output",
+    )
 
     v = x.request_args_for_values()
 
@@ -46,39 +67,28 @@ def test_request_args_for_values() -> None:
 def test_none_as_query_param_value() -> None:
     """We want to override a value and set it to null"""
 
-    class SimpleResponse(BaseModel):
-        data: str
-
-    class ModelWithClassVar(RequestModel[SimpleResponse]):
-        url: ClassVar[str] = "test"
-        method: ClassVar[str] = "POST"
-        response_model: ClassVar[Type[SimpleResponse]] = SimpleResponse
-        page: Optional[int]
-
-    x = ModelWithClassVar(page=None)
+    x = ModelWithClassVar2(page=None)
 
     v = x.request_args_for_values()
 
     assert "page" in v[params.Query]
 
 
+class AnnotatedType(RequestModel[SimpleResponse]):
+    a: Annotated[str, params.Query()]
+    b: Annotated[SimpleResponse, params.Body()]
+    c: Annotated[str, params.Header()]
+
+    # a BaseModel cannot be used as query param so should be placed in the body
+    d: SimpleResponse
+    e: Annotated[SimpleResponse, params.Body()]
+
+    # this should race an exception
+    f: Annotated[SimpleResponse, params.Path()]
+    g: Annotated[SimpleResponse, params.Query()]
+
+
 def test_get_annotated_type() -> None:
-    class SimpleResponse(BaseModel):
-        data: str
-
-    class AnnotatedType(RequestModel[Any]):
-        a: Annotated[str, params.Query()]
-        b: Annotated[SimpleResponse, params.Body()]
-        c: Annotated[str, params.Header()]
-
-        # a BaseModel cannot be used as query param so should be placed in the body
-        d: SimpleResponse
-        e: Annotated[SimpleResponse, params.Body()]
-
-        # this should race an exception
-        f: Annotated[SimpleResponse, params.Path()]
-        g: Annotated[SimpleResponse, params.Query()]
-
     hints = get_type_hints(AnnotatedType, include_extras=True)
 
     assert isinstance(get_annotated_type("a", hints["a"]), params.Query)
@@ -95,9 +105,6 @@ def test_get_annotated_type() -> None:
 
 
 def test_annotated_type() -> None:
-    class SimpleResponse(BaseModel):
-        data: str
-
     assert isinstance(
         get_annotated_type("w", Annotated[List[str], params.Query()]), params.Query
     )
@@ -117,19 +124,12 @@ def test_annotated_type() -> None:
 
 
 def test_field_annotation_is_sequence() -> None:
-    class SimpleResponse(BaseModel):
-        data: str
-
     assert field_annotation_is_sequence(str) is False
     assert field_annotation_is_sequence(List[str]) is True
     assert field_annotation_is_sequence(SimpleResponse) is False
 
 
 def test_field_annotation_is_scalar() -> None:
-    class SimpleResponse(BaseModel):
-        data: str
-
-    # assert field_annotation_is_complex(SimpleResponse) is True
     assert field_annotation_is_scalar(Annotated[SimpleResponse, params.Path()]) is True
 
     assert field_annotation_is_scalar(SimpleResponse) is False
@@ -138,12 +138,24 @@ def test_field_annotation_is_scalar() -> None:
     assert field_annotation_is_scalar(Annotated[SimpleResponse, params.Path()]) is True
 
 
-def test_field_annotation_with_constraints() -> None:
-    class SimpleRequest(RequestModel[Any]):
-        url: ClassVar[str] = "test"
-        method: ClassVar[str] = "test"
-        data: Annotated[str, params.Query(min_length=8, max_length=10)]
+class SimpleRequest(RequestModel[SimpleResponse]):
+    url: ClassVar[str] = "test"
+    method: ClassVar[str] = "test"
+    data: Annotated[str, params.Query(min_length=8, max_length=10)]
 
+
+class SimpleRequest2(RequestModel[SimpleResponse]):
+    url: ClassVar[str] = "test"
+    method: ClassVar[str] = "test"
+    query_list: Annotated[List[int], params.Query()]
+    data_str: Annotated[str, params.Body()]
+    data_int: Annotated[int, params.Body()]
+    data_list: Annotated[List[int], params.Body()]
+    data_dict: Annotated[Dict[str, int], params.Body(embed=True)]
+    response_model: ClassVar[Type[SimpleResponse]] = SimpleResponse
+
+
+def test_field_annotation_with_constraints() -> None:
     with pytest.raises(
         ValidationError, match="String should have at least 8 characters"
     ):
@@ -151,20 +163,11 @@ def test_field_annotation_with_constraints() -> None:
 
 
 def test_field_unified_body() -> None:
-    class SimpleRequest(RequestModel[Any]):
-        url: ClassVar[str] = "test"
-        method: ClassVar[str] = "test"
-        query_list: Annotated[List[int], params.Query()]
-        data_str: Annotated[str, params.Body()]
-        data_int: Annotated[int, params.Body()]
-        data_list: Annotated[List[int], params.Body()]
-        data_dict: Annotated[Dict[str, int], params.Body(embed=True)]
-
     data: Dict[str, Any] = dict(
         data_str="test", data_int=1, data_list=[0, 1, 2], data_dict={"key": 1925}
     )
 
-    r = SimpleRequest(query_list=[1, 2, 3], **data)
+    r = SimpleRequest2(query_list=[1, 2, 3], **data)
 
     x = r.request_args_for_values()
 
