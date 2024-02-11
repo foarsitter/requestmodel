@@ -17,8 +17,8 @@ Changelog = "https://github.com/foarsitter/requestmodel/releases"
 
 [tool.poetry.dependencies]
 python = ">=3.8"
-fastapi = "*"
 httpx = "*"
+pydantic = "^2.0.0"
 
 [tool.poetry.group.requests.dependencies]
 requests = "^2.31.0"
@@ -51,6 +51,7 @@ sphinx-autobuild = ">=2021.3.14"
 typeguard = ">=2.13.3"
 xdoctest = { extras = ["colors"], version = ">=0.15.10" }
 myst-parser = { version = ">=0.16.1" }
+fastapi = "^0.109.2"
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
@@ -59,6 +60,7 @@ tests = ["tests", "*/tests"]
 [tool.coverage.run]
 branch = true
 source = ["requestmodel", "tests"]
+omit = ["src/requestmodel/fastapi.py", '**/fastapi.py']
 
 [tool.coverage.report]
 show_missing = true
