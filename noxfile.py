@@ -157,6 +157,7 @@ def mypy(session: Session) -> None:
         "python-multipart",
         "flask-wtf",
         "a2wsgi",
+        "typeguard",
         "fastapi",
         "requests",
         "types-requests",
@@ -179,6 +180,7 @@ def tests(session: Session) -> None:
         "a2wsgi",
         "fastapi",
         "pygments",
+        "typeguard",
         "requests",
     )
     try:

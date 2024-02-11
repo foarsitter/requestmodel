@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import FastAPI
 from fastapi import File
 from fastapi import Header
@@ -7,6 +9,8 @@ from typing_extensions import Annotated
 
 from tests.fastapi_server.schema import FileCreateSchema
 from tests.fastapi_server.schema import FileUploadResponse
+from tests.fastapi_server.schema import NameModel
+from tests.fastapi_server.schema import NameModelList
 from tests.fastapi_server.schema import PaginatedResponse
 
 
@@ -40,9 +44,14 @@ async def get_items(page: int = 1, size: int = 25) -> PaginatedResponse:
 
 @app.put("/items")
 async def create_item(
-    data: Annotated[FileCreateSchema, params.Body()]
+    data: Annotated[FileCreateSchema, params.Body()],
 ) -> FileCreateSchema:
     return data
+
+
+@app.get("/type-adapter")
+async def get_type_adapter() -> List[NameModel]:
+    return NameModelList.validate_python([NameModel(name="test")])
 
 
 client = TestClient(app)
