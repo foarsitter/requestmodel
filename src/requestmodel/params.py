@@ -1,8 +1,37 @@
-"""In the future it may be possible to implement our own params,
-but for now we use the ones from FastAPI"""
-from fastapi.params import Body as Body  # noqa
-from fastapi.params import Cookie as Cookie  # noqa
-from fastapi.params import File as File  # noqa
-from fastapi.params import Header as Header  # noqa
-from fastapi.params import Path as Path  # noqa
-from fastapi.params import Query as Query  # noqa
+from pydantic.fields import FieldInfo
+from pydantic.fields import _FieldInfoInputs
+from typing_extensions import Unpack
+
+
+class Param(FieldInfo):
+    pass
+
+
+class Body(Param):
+    def __init__(self, embed: bool = False, **kwargs: Unpack[_FieldInfoInputs]) -> None:
+        super().__init__(**kwargs)
+        self.embed = embed
+
+
+class Cookie(Param):
+    pass
+
+
+class File(Param):
+    pass
+
+
+class Header(Param):
+    def __init__(
+        self, convert_underscores: bool = True, **kwargs: Unpack[_FieldInfoInputs]
+    ) -> None:
+        super().__init__(**kwargs)
+        self.convert_underscores = convert_underscores
+
+
+class Path(Param):
+    pass
+
+
+class Query(Param):
+    pass

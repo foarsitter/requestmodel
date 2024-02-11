@@ -2,30 +2,16 @@ from typing import Any
 from typing import Dict
 from typing import Optional
 from typing import Set
-from typing import Type
-from typing import Union
 
-from fastapi import _compat
-from fastapi import utils
 from pydantic.fields import FieldInfo
 from typing_extensions import Annotated
 from typing_extensions import get_args
 from typing_extensions import get_origin
 
-from requestmodel import params
-from requestmodel.typing import RequestArgs
-
-
-def field_annotation_is_complex(annotation: Union[Type[Any], None]) -> bool:
-    return _compat.field_annotation_is_complex(annotation)
-
-
-def field_annotation_is_sequence(annotation: Union[Type[Any], None]) -> bool:
-    return _compat.field_annotation_is_sequence(annotation)
-
-
-def get_path_param_names(path: str) -> Set[str]:
-    return utils.get_path_param_names(path)
+from . import params
+from .fastapi import field_annotation_is_complex
+from .fastapi import field_annotation_is_sequence
+from .typing import RequestArgs
 
 
 def get_annotated_type(

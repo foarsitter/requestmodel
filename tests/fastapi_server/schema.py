@@ -3,6 +3,7 @@ from typing import List
 from typing import Type
 
 from pydantic import BaseModel
+from pydantic import TypeAdapter
 from typing_extensions import Annotated
 
 from requestmodel import RequestModel
@@ -38,3 +39,10 @@ class FileUploadRequest(RequestModel[FileUploadResponse]):
     name: str
     file: Annotated[bytes, params.File()]
     extra_header: Annotated[str, params.Header()]
+
+
+class NameModel(BaseModel):
+    name: str
+
+
+NameModelList = TypeAdapter(List[NameModel])

@@ -16,10 +16,9 @@ from pydantic import TypeAdapter
 from typing_extensions import get_type_hints
 from typing_extensions import override
 
-from requestmodel import params
-from requestmodel import utils
-
-from .encoders import jsonable_encoder
+from . import params
+from .fastapi import get_path_param_names
+from .fastapi import jsonable_encoder
 from .typing import RequestArgs
 from .typing import ResponseType
 from .utils import flatten_body
@@ -37,7 +36,7 @@ class BaseRequestModel(BaseModel, Generic[ResponseType]):
     response_model: ClassVar[Type[ResponseType]]  # type: ignore[misc]
 
     def get_path_param_names(self) -> Set[str]:
-        return utils.get_path_param_names(self.url)
+        return get_path_param_names(self.url)
 
     def request_args_for_values(self) -> RequestArgs:
         request_args: RequestArgs = {

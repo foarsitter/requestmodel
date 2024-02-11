@@ -10,6 +10,7 @@ from fastapi._compat import field_annotation_is_scalar
 from fastapi._compat import field_annotation_is_sequence
 from pydantic import BaseModel
 from pydantic import ValidationError
+from typeguard import suppress_type_checks
 from typing_extensions import Annotated
 from typing_extensions import get_args
 from typing_extensions import get_origin
@@ -18,6 +19,9 @@ from typing_extensions import get_type_hints
 from requestmodel import RequestModel
 from requestmodel import params
 from requestmodel.utils import get_annotated_type
+from tests.fastapi_server import client
+from tests.fastapi_server.schema import NameModel
+from tests.fastapi_server.schema import NameModelList
 
 
 class SimpleResponse(BaseModel):
@@ -193,3 +197,17 @@ def test_get_args() -> None:
     p = get_args(Annotated[List[str], params.Query()])
     assert p[0] == List[str]
     assert isinstance(p[1], params.Query)
+
+
+class TypeAdapterRequest(RequestModel[List[NameModel]]):  # type: ignore[type-var]
+    url: ClassVar[str] = "/type-adapter"
+    method: ClassVar[str] = "get"
+    response_model: ClassVar[Type[List[NameModel]]] = NameModelList  # type: ignore[assignment]
+
+
+@suppress_type_checks
+def test_type_adapter() -> None:
+    request = TypeAdapterRequest()
+    response = request.send(client)
+
+    assert response == [NameModel(name="test")]
