@@ -22,7 +22,7 @@ class PaginatedRequest(IteratorRequestModel[PaginatedResponse]):
     page: int
     size: int
 
-    def next(self, response: PaginatedResponse) -> bool:
+    def next_from_response(self, response: PaginatedResponse) -> bool:
         self.page = response.page + 1
         if self.page * response.size > response.total:
             return False
