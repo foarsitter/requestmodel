@@ -11,3 +11,15 @@ updates:
     versioning-strategy: lockfile-only
     allow:
       - dependency-type: "production"
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+    versioning-strategy: lockfile-only
+    allow:
+      - dependency-type: "development"
+    groups:
+      dev-dependencies:
+        applies-to: version-updates
+        patterns:
+          - "*"
