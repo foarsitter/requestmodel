@@ -2,15 +2,19 @@
 
 ```python
 from httpx import Client
-from requestmodel import RequestModel, BaseModel
+from pydantic import BaseModel
+
+from requestmodel import RequestModel
 from requestmodel.params import Path, Query
 from typing_extensions import Annotated
+
 
 # define your response,
 # preferably we generate it with datamodel-code-generator based on an OpenAPI spec
 class MyResponse(BaseModel):
     id: int
     name: str
+
 
 # describe your request
 # the goal is to follow the rules FastAPI uses to describe endpoints
@@ -42,8 +46,9 @@ that can be used for paginated responses by implementing `IteratorRequestModel.n
 from typing import List, Optional
 
 from httpx import Client
+from pydantic import BaseModel
 
-from requestmodel import IteratorRequestModel, BaseModel
+from requestmodel import IteratorRequestModel
 
 
 class MyResponse(BaseModel):
