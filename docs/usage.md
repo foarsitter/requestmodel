@@ -70,7 +70,7 @@ class MyPaginatedRequest(IteratorRequestModel[PaginatedMyResponse]):
 
     next: Optional[str] = None  # will be used to paginate
 
-    def next(self, response: PaginatedMyResponse) -> bool:
+    def next_from_response(self, response: PaginatedMyResponse) -> bool:
         # update the new request arguments
         self.next = response.next
         return self.next is not None
