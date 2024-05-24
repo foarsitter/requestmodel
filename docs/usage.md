@@ -29,6 +29,9 @@ class MyRequest(RequestModel[MyResponse]):
     param1: Annotated[str, Path()]  # will be used in the url
     param2: Annotated[int, Query()]  # will be converted as a query parameter
 
+    # the generic type should match with response_model so we can use it to deserialize the request
+    response_model = MyResponse
+
 
 client = Client()
 
@@ -69,6 +72,9 @@ class MyPaginatedRequest(IteratorRequestModel[PaginatedMyResponse]):
     param2: int  # will be converted as a query parameter
 
     next: Optional[str] = None  # will be used to paginate
+
+    # the generic type should match with response_model so we can use it to deserialize the request
+    response_model = PaginatedMyResponse
 
     def next_from_response(self, response: PaginatedMyResponse) -> bool:
         # update the new request arguments
