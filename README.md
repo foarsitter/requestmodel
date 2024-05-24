@@ -23,7 +23,7 @@
 
 - Model your http requests as a pydantic model
 - Annotate your request parameters with fastapi params
-- Support voor sync & async requests
+- Support for sync & async requests
 
 ## Goals
 
