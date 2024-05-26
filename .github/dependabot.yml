@@ -7,19 +7,11 @@ updates:
   - package-ecosystem: pip
     directory: "/"
     schedule:
-      interval: daily
-    versioning-strategy: lockfile-only
-    allow:
-      - dependency-type: "production"
-  - package-ecosystem: pip
-    directory: "/"
-    schedule:
       interval: weekly
     versioning-strategy: lockfile-only
-    allow:
-      - dependency-type: "development"
     groups:
       dev-dependencies:
+        dependency-type: "development"
         applies-to: version-updates
         patterns:
           - "*"
