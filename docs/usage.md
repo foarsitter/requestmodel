@@ -20,7 +20,7 @@ class MyResponse(BaseModel):
 # the goal is to follow the rules FastAPI uses to describe endpoints
 class MyRequest(RequestModel[MyResponse]):
     method = "GET"
-    url = "https://example.com/api/v1/my-endpoint/{param1}"
+    url = "/api/v1/my-endpoint/{param1}"
 
     param1: str  # will be used in the url
     param2: int  # will be converted as a query parameter
@@ -33,7 +33,7 @@ class MyRequest(RequestModel[MyResponse]):
     response_model = MyResponse
 
 
-client = Client()
+client = Client(base_url="https://example.com")
 
 response = MyRequest(param1="foo", param2=42).send(client)
 
