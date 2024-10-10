@@ -107,6 +107,8 @@ class RequestModel(BaseRequestModel[ResponseType]):
         r = self.as_request(client)
         self.raw_response = await client.send(r)
         self.handle_error(self.raw_response)
+        if isinstance(self.response_model, TypeAdapter):
+            return self.response_model.validate_python(self.raw_response.json())
         return self.response_model.model_validate(self.raw_response.json())
 
     def as_request(self, client: BaseClient) -> Request:
