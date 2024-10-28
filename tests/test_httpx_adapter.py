@@ -4,7 +4,7 @@ from tests.locatieserver.requests import LookupRequest
 
 
 def test_preserve_header() -> None:
-    client = Client(headers={"X-Test": "test"})
+    client = Client(headers={"X-Test": "test"}, timeout=30)
 
     request = LookupRequest(id="test").as_request(client)
 
