@@ -11,7 +11,9 @@ from tests.locatieserver.requests import LookupRequests
 
 
 def test_lookup_request_sync() -> None:
-    client = Client(base_url="https://api.pdok.nl/bzk/locatieserver/search/v3_1/")
+    client = Client(
+        base_url="https://api.pdok.nl/bzk/locatieserver/search/v3_1/", timeout=30
+    )
 
     request = LookupRequest(id="adr-bf54db721969487ed33ba84d9973c702")
 
@@ -25,7 +27,9 @@ def test_lookup_request_sync() -> None:
 
 @pytest.mark.asyncio
 async def test_lookup_request_async() -> None:
-    client = AsyncClient(base_url="https://api.pdok.nl/bzk/locatieserver/search/v3_1/")
+    client = AsyncClient(
+        base_url="https://api.pdok.nl/bzk/locatieserver/search/v3_1/", timeout=30
+    )
 
     request = LookupRequest(id="adr-bf54db721969487ed33ba84d9973c702")
 
