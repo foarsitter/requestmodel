@@ -50,4 +50,4 @@ class RequestsRequestModel(BaseRequestModel[ResponseType]):
         r = self.as_request()
         self.response = client.send(r.prepare())
         self.handle_error(self.response)
-        return self.response_model.model_validate(self.response.json())
+        return self.adapt_type(self.response)

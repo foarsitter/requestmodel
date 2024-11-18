@@ -220,8 +220,8 @@ def test_type_adapter() -> None:
 async def test_type_adapter_async() -> None:
     request = TypeAdapterRequest()
 
-    async with AsyncClient(app=app, base_url="http://test") as client:
+    async with AsyncClient(app=app, base_url="http://test", timeout=30) as aclient:
 
-        response = await request.asend(client)
+        response = await request.asend(aclient)
 
     assert response == [NameModel(name="test")]

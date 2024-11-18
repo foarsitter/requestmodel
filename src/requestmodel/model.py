@@ -1,7 +1,9 @@
+from typing import Any
 from typing import ClassVar
 from typing import Generic
 from typing import Iterator
 from typing import Optional
+from typing import Protocol
 from typing import Set
 from typing import Type
 
@@ -13,6 +15,7 @@ from httpx._client import BaseClient
 from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import TypeAdapter
+from pydantic._internal._model_construction import ModelMetaclass
 from typing_extensions import get_type_hints
 from typing_extensions import override
 
@@ -24,6 +27,10 @@ from .typing import ResponseType
 from .utils import flatten_body
 from .utils import get_annotated_type
 from .utils import unify_body
+
+
+class JSONResponse(Protocol):
+    def json(self) -> Any: ...  # noqa: E704
 
 
 class BaseRequestModel(BaseModel, Generic[ResponseType]):
@@ -86,6 +93,15 @@ class BaseRequestModel(BaseModel, Generic[ResponseType]):
 
         return request_args
 
+    def adapt_type(self, response: JSONResponse) -> ResponseType:
+        if isinstance(self.response_model, TypeAdapter):
+            return self.response_model.validate_python(response.json())
+
+        if isinstance(self.response_model, (BaseModel, ModelMetaclass)):
+            return self.response_model.model_validate(response.json())
+
+        raise ValueError("response_model must be a TypeAdapter or a BaseModel")
+
 
 class RequestModel(BaseRequestModel[ResponseType]):
     raw_response: Optional[Response] = None
@@ -98,18 +114,15 @@ class RequestModel(BaseRequestModel[ResponseType]):
         r = self.as_request(client)
         self.raw_response = client.send(r)
         self.handle_error(self.raw_response)
-        if isinstance(self.response_model, TypeAdapter):
-            return self.response_model.validate_python(self.raw_response.json())
-        return self.response_model.model_validate(self.raw_response.json())
+
+        return self.adapt_type(self.raw_response)
 
     async def asend(self, client: AsyncClient) -> ResponseType:
         """Send the request asynchronously"""
         r = self.as_request(client)
         self.raw_response = await client.send(r)
         self.handle_error(self.raw_response)
-        if isinstance(self.response_model, TypeAdapter):
-            return self.response_model.validate_python(self.raw_response.json())
-        return self.response_model.model_validate(self.raw_response.json())
+        return self.adapt_type(self.raw_response)
 
     def as_request(self, client: BaseClient) -> Request:
         """Transform the properties of the object into a request"""
