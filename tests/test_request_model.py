@@ -211,3 +211,12 @@ def test_type_adapter() -> None:
     response = request.send(client)
 
     assert response == [NameModel(name="test")]
+
+
+def test_type_adapter_exception() -> None:
+    request = TypeAdapterRequest()
+    TypeAdapterRequest.response_model = int  # type: ignore
+    with pytest.raises(
+        ValueError, match="response_model must be a TypeAdapter or a BaseModel"
+    ):
+        request.adapt_type(SimpleResponse(data="test"))
