@@ -29,7 +29,7 @@ from .utils import get_annotated_type
 from .utils import unify_body
 
 
-class JSONResponse(Protocol):
+class JSONResponse(Protocol):  # pragma: no cover
     def json(self) -> Any: ...  # noqa: E704
 
 

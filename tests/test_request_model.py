@@ -8,7 +8,6 @@ from typing import Type
 import pytest
 from fastapi._compat import field_annotation_is_scalar
 from fastapi._compat import field_annotation_is_sequence
-from httpx import AsyncClient
 from pydantic import BaseModel
 from pydantic import ValidationError
 from typeguard import suppress_type_checks
@@ -20,7 +19,6 @@ from typing_extensions import get_type_hints
 from requestmodel import RequestModel
 from requestmodel import params
 from requestmodel.utils import get_annotated_type
-from tests.fastapi_server import app
 from tests.fastapi_server import client
 from tests.fastapi_server.schema import NameModel
 from tests.fastapi_server.schema import NameModelList
@@ -215,13 +213,10 @@ def test_type_adapter() -> None:
     assert response == [NameModel(name="test")]
 
 
-@suppress_type_checks
-@pytest.mark.asyncio
-async def test_type_adapter_async() -> None:
+def test_type_adapter_exception() -> None:
     request = TypeAdapterRequest()
-
-    async with AsyncClient(app=app, base_url="http://test", timeout=30) as aclient:
-
-        response = await request.asend(aclient)
-
-    assert response == [NameModel(name="test")]
+    TypeAdapterRequest.response_model = int  # type: ignore
+    with pytest.raises(
+        ValueError, match="response_model must be a TypeAdapter or a BaseModel"
+    ):
+        request.adapt_type(SimpleResponse(data="test"))
