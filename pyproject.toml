@@ -21,14 +21,14 @@ httpx = "*"
 pydantic = "^2.0.0"
 
 [tool.poetry.group.requests.dependencies]
-requests = "^2.31.0"
+requests = ">=2.31.0"
 
 [tool.poetry.group.dev.dependencies]
-pytest-asyncio = "^0.21.1"
-python-multipart = "^0.0.7"
-flask-wtf = "^1.2.1"
-flask-pytest = "^0.0.5"
-a2wsgi = "^1.8.0"
+pytest-asyncio = ">=0.21.1"
+python-multipart = ">=0.0.7"
+flask-wtf = ">=1.2.1"
+flask-pytest = ">=0.0.5"
+a2wsgi = ">=1.8.0"
 Pygments = ">=2.10.0"
 bandit = ">=1.7.4"
 black = ">=21.10b0"
@@ -51,7 +51,7 @@ sphinx-autobuild = ">=2021.3.14"
 typeguard = ">=2.13.3"
 xdoctest = { extras = ["colors"], version = ">=0.15.10" }
 myst-parser = { version = ">=0.16.1" }
-fastapi = "^0.109.2"
+fastapi = ">=0.109.2"
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
