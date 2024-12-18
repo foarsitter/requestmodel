@@ -42,21 +42,6 @@ def get_annotated_type(
     else:
         annotated_property = params.Query()
 
-    scalar_types = (params.Query, params.Path, params.Header, params.Cookie)
-
-    if isinstance(annotated_property, scalar_types) and is_complex:
-        # query params do accept lists
-        if not (isinstance(annotated_property, params.Query) and is_sequence):
-            annotated_name = annotated_property.__class__.__name__
-
-            # in 3.8 & 3.9 Dict does not have a __name__
-            if not hasattr(origin, "__name__"):
-                origin = get_origin(origin)
-            raise ValueError(
-                f"`{variable_key}` annotated as {annotated_name} "
-                f"can only be a scalar, not a `{origin.__name__}`"
-            )
-
     return annotated_property
 
 

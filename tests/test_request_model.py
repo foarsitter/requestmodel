@@ -101,30 +101,12 @@ def test_get_annotated_type() -> None:
     assert isinstance(get_annotated_type("d", hints["d"]), params.Body)
     assert isinstance(get_annotated_type("e", hints["e"]), params.Body)
 
-    with pytest.raises(ValueError, match="can only be a scalar"):
-        assert isinstance(get_annotated_type("f", hints["f"]), params.Path)
-
-    with pytest.raises(ValueError, match="can only be a scalar"):
-        assert isinstance(get_annotated_type("g", hints["g"]), params.Query)
-
 
 def test_annotated_type() -> None:
     assert isinstance(
         get_annotated_type("w", Annotated[List[str], params.Query()]), params.Query
     )
     assert isinstance(get_annotated_type("w", List[str]), params.Query)
-
-    with pytest.raises(
-        ValueError,
-        match="`x` annotated as Query can only be a scalar, not a `SimpleResponse`",
-    ):
-        get_annotated_type("x", Annotated[SimpleResponse, params.Query()])
-
-    with pytest.raises(
-        ValueError,
-        match="`y` annotated as Query can only be a scalar, not a `(.)ict`",
-    ):
-        get_annotated_type("y", Annotated[Dict[str, str], params.Query()])
 
 
 def test_field_annotation_is_sequence() -> None:
