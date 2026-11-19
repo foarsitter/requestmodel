@@ -9,7 +9,6 @@ from pydantic import BaseModel
 from pydantic import TypeAdapter
 from pydantic.fields import FieldInfo
 
-
 ResponseType = TypeVar(
     "ResponseType",
     bound=Union[BaseModel, TypeAdapter[List[BaseModel]], List[BaseModel]],
