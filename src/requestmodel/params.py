@@ -1,6 +1,6 @@
+from typing import Any
+
 from pydantic.fields import FieldInfo
-from pydantic.fields import _FieldInfoInputs
-from typing_extensions import Unpack
 
 
 class Param(FieldInfo):
@@ -8,7 +8,7 @@ class Param(FieldInfo):
 
 
 class Body(Param):
-    def __init__(self, embed: bool = False, **kwargs: Unpack[_FieldInfoInputs]) -> None:
+    def __init__(self, embed: bool = False, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.embed = embed
 
@@ -22,9 +22,7 @@ class File(Param):
 
 
 class Header(Param):
-    def __init__(
-        self, convert_underscores: bool = True, **kwargs: Unpack[_FieldInfoInputs]
-    ) -> None:
+    def __init__(self, convert_underscores: bool = True, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.convert_underscores = convert_underscores
 
