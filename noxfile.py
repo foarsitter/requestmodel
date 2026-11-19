@@ -9,7 +9,6 @@ from textwrap import dedent
 
 import nox
 
-
 try:
     from nox_poetry import Session
     from nox_poetry import session
@@ -23,7 +22,7 @@ except ImportError:
     raise SystemExit(dedent(message)) from None
 
 package = "requestmodel"
-python_versions = ["3.11", "3.10", "3.9", "3.8", "3.12"]
+python_versions = ["3.14", "3.15", "3.13", "3.12", "3.11", "3.10"]
 nox.needs_version = ">= 2021.6.6"
 nox.options.sessions = (
     "pre-commit",
