@@ -40,7 +40,7 @@ class BaseRequestModel(BaseModel, Generic[ResponseType]):
     url: ClassVar[str]
     method: ClassVar[str]
 
-    response_model: ClassVar[Type[ResponseType]]  # type: ignore[misc]
+    response_model: ClassVar[Type[ResponseType]]
 
     def get_path_param_names(self) -> Set[str]:
         return get_path_param_names(self.url)

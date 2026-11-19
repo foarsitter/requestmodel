@@ -46,7 +46,6 @@ from pydantic_core import Url as Url
 from typing_extensions import get_args
 from typing_extensions import get_origin
 
-
 IncEx = Union[Set[int], Set[str], Dict[int, Any], Dict[str, Any]]
 
 

@@ -6,7 +6,6 @@ from typing import Optional
 from typing import Type
 
 import pytest
-from fastapi._compat import field_annotation_is_scalar
 from fastapi._compat import field_annotation_is_sequence
 from pydantic import BaseModel
 from pydantic import ValidationError
@@ -113,15 +112,6 @@ def test_field_annotation_is_sequence() -> None:
     assert field_annotation_is_sequence(str) is False
     assert field_annotation_is_sequence(List[str]) is True
     assert field_annotation_is_sequence(SimpleResponse) is False
-
-
-def test_field_annotation_is_scalar() -> None:
-    assert field_annotation_is_scalar(Annotated[SimpleResponse, params.Path()]) is True
-
-    assert field_annotation_is_scalar(SimpleResponse) is False
-    assert field_annotation_is_scalar(str) is True
-    assert field_annotation_is_scalar(Annotated[str, params.Path()]) is True
-    assert field_annotation_is_scalar(Annotated[SimpleResponse, params.Path()]) is True
 
 
 class SimpleRequest(RequestModel[SimpleResponse]):

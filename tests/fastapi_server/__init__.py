@@ -13,7 +13,6 @@ from tests.fastapi_server.schema import NameModel
 from tests.fastapi_server.schema import NameModelList
 from tests.fastapi_server.schema import PaginatedResponse
 
-
 app = FastAPI()
 
 
